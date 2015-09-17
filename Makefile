@@ -1,4 +1,4 @@
-all: demod.pdf
+all: thesis.pdf
 
 CHAPTERS=introduction.tex module-system.tex intuition.tex model.tex implementation.tex evaluation.tex related-work.tex conclusion.tex
 
@@ -8,11 +8,11 @@ CHAPTERS_DIR=$(addprefix chapters/,$(CHAPTERS))
 
 LISTINGS_DIR=$(addprefix listings/,$(LISTINGS))
 
-demod.pdf: demod.tex abstract.tex $(CHAPTERS_DIR) $(LISTINGS_DIR)
+thesis.pdf: thesis.tex abstract.tex $(CHAPTERS_DIR) $(LISTINGS_DIR)
 	mkdir -p build
-	pdflatex -output-directory=build -shell-escape demod.tex
-	bibtex build/demod
-	pdflatex -output-directory=build -shell-escape demod.tex
-	pdflatex -output-directory=build -shell-escape demod.tex
-	cp build/demod.pdf .
+	pdflatex -output-directory=build -shell-escape thesis
+	bibtex build/thesis
+	pdflatex -output-directory=build -shell-escape thesis
+	pdflatex -output-directory=build -shell-escape thesis
+	cp build/thesis.pdf .
 
