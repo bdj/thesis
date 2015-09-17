@@ -16,8 +16,27 @@ Also, the programmer can specify at what phase to import another module so they 
 Exports in Racket use the \racket{provide} form, which has similar features as \racket{require}, such as control over which identifiers are exported, renaming capabilities, and phase shifting capabilities.
 
 The following example illustrates some of the features of the racket module system. 
-
-\emph{TODO: racket module example}
+\begin{figure}
+  \caption{A figure}
+\end{figure}
+\begin{figure}
+  \caption{Another figure}
+\end{figure}
+\begin{listing}
+  \inputminted{racket}{listings/obj.rkt}
+  \caption{A caption}
+  \label{lst:obj.rkt}
+\end{listing}
+\begin{listing}
+  \inputminted{racket}{listings/while-test.rkt}
+  \caption{Another caption}
+  \label{lst:while-test.rkt}
+\end{listing}
+\begin{listing}
+  \inputminted{racket}{listings/while-lang.rkt}
+  \caption{Third Caption}
+  \label{lst:while-lang.rkt}
+\end{listing}
 
 The \texttt{obj.rkt} file contains the \texttt{obj} module.
 The \texttt{obj} module contains a variable definition, and an accessor and mutator function which are exported.
