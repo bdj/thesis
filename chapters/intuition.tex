@@ -1,0 +1,160 @@
+\chapter{Intuition}
+
+Demodularization enables whole-program optimizations and eliminates module loading overhead while maintaining the runtime meaning of a program.
+To understand how demodularization preserves the runtime meaning of a program, we first need to understand the runtime meaning of a modular Racket program.
+Consider the program in Figure~\ref{main-rkt}.
+
+\begin{figure}[h]
+\begin{schemedisplay}
+#lang racket/base
+(require "queue.rkt")
+
+(with-queue (1 2 3 4 5 6)
+  (enqueue 4)
+  (displayln (dequeue))
+  (displayln (dequeue)))
+\end{schemedisplay}
+\caption{\texttt{main.rkt}}
+\label{main-rkt}
+\end{figure}
+
+This program imports a queue library through a \scheme{require} expression and then uses the library to do some queue operations.
+Figures~\ref{queue-rkt},~\ref{long-queue-rkt}, and~\ref{short-queue-rkt} contain the three modules that make up the queue library.
+The library consists of a macro and two queue implementations, where the macro decides which implementation to use based on the length of the initial queue at compile time.
+
+\begin{figure}[h]
+\include{queue.rkt}
+\caption{\texttt{queue.rkt}}
+\label{queue-rkt}
+\end{figure}
+
+\begin{figure}[h]
+\begin{schemedisplay}
+#lang racket/base
+(define (make-long-queue . vs)
+  .... make-vector ....)
+
+(define (long-enqueue q v)
+  .... vector-set! ....)
+
+(define (long-dequeue q)
+  .... vector-ref ....)
+
+(provide (all-defined-out))
+\end{schemedisplay}
+\caption{\texttt{long-queue.rkt}}
+\label{long-queue-rkt}
+\end{figure}
+
+\begin{figure}[h]
+\begin{schemedisplay}
+#lang racket/base
+(define (make-short-queue . vs)
+  .... list ....)
+
+(define (short-enqueue q v)
+  .... cons ....)
+
+(define (short-dequeue q)
+  .... list-ref ....)
+
+(provide (all-defined-out))
+\end{schemedisplay}
+\caption{\texttt{short-queue.rkt}}
+\label{short-queue-rkt}
+\end{figure}
+
+The Racket runtime evaluates this program by compiling and then running the main module.
+Whenever the runtime encounters a \scheme{require} expression during compilation, it either loads an existing compiled version of the required module or compiles the required module.
+Whenever the runtime encounters a macro expression during compilation, it expands the macro.
+In this example, the runtime begins to compile \texttt{main.rkt} and loads the compiled version of \scheme{racket/base}. 
+Next, it encounters the \scheme{require} expression for \texttt{queue.rkt} and compiles it.
+Compilation of \texttt{queue.rkt} triggers compilation of both \texttt{short-queue.rkt} and \texttt{long-queue.rkt}. 
+
+After finishing \texttt{queue.rkt}, the runtime returns to \texttt{main.rkt} and expands the \scheme{with-queue} macro.
+The \scheme{with-queue} macro checks the length of the initial queue, which in this case is six, and chooses to use the \scheme{long-queue} implementation.
+The macro expands into a \scheme{let} expression that binds the identifier \scheme{q} to the initial queue, along with internal definitions of \scheme{enqueue} and \scheme{dequeue} that use the \scheme{long-queue} implementations.
+Figure~\ref{main-expanded-rkt} shows what \texttt{main.rkt} looks like after expansion.
+
+\begin{figure}[h]
+\begin{schemedisplay}
+(module main racket/base
+  (#%module-begin
+   (require "queue.rkt")
+   (let ((q (make-long-queue 1 2 3 4 5 6)))
+     (define (dequeue) (long-dequeue q))
+     (define (enqueue x) (long-enqueue q x))
+     (enqueue 4)
+     (displayln (dequeue))
+     (displayln (dequeue)))))
+\end{schemedisplay}
+\caption{\texttt{main.rkt} expanded}
+\label{main-expanded-rkt}
+\end{figure}
+
+
+After compiling the whole program, the Racket runtime evaluates the program by loading and executing the compiled main module.
+As is the case with compilation, evaluation also follows the \scheme{require} expressions and runs required modules as it encounters them.
+In this example, the runtime evaluates \texttt{main.rkt} and encounters the \scheme{require} expression for \texttt{queue.rkt}.
+It then follows the \scheme{require}s for \texttt{short-queue.rkt} and \texttt{long-queue.rkt} and installs the definitions that those modules provide.
+When evaluation returns to \texttt{queue.rkt}, nothing else happens because macros are only needed at compile time.
+Finally, evaluation returns to \texttt{main.rkt} and the runtime evaluates the rest of the program.
+
+A demodularized version of this program should contain all code that ran while evaluating the modular program, minus the module loading steps.
+The demodularization algorithm starts with the compiled versions of all of the modules for the program, and then traces the \scheme{require} expressions and includes all runtime code into a single module in the order it encounters the code.
+Figure~\ref{main-demod-rkt} shows what the single module looks like after running the demodularization algorithm on it.
+There are no require statements and the macro definition is gone, but the all the code that ran during the evaluation of the modular version is there in the same order as before.
+
+\begin{figure}[h]
+\begin{schemedisplay}
+(module main racket/base
+  (#%module-begin
+   (define (make-short-queue . vs)
+    .... list ....)
+
+   (define (short-enqueue q v)
+    .... cons ....)
+
+   (define (short-dequeue q)
+    .... list-ref ....)
+
+   (define (make-long-queue . vs)
+    .... make-vector ....)
+
+   (define (long-enqueue q v)
+    .... vector-set! ....)
+
+   (define (long-dequeue q)
+    .... vector-ref ....)
+
+   (let ((q (make-long-queue 1 2 3 4 5 6)))
+     (define (dequeue) (long-dequeue q))
+     (define (enqueue x) (long-enqueue q x))
+     (enqueue 4)
+     (displayln (dequeue))
+     (displayln (dequeue)))))
+\end{schemedisplay}
+\caption{\texttt{main.rkt} demodularized}
+\label{main-demod-rkt}
+\end{figure}
+
+
+This example is rather simple because it only uses a single macro, but in practice, Racket programs use many macros, even macros that use other macros in their implementations, creating a language tower.
+The demodularization algorithm takes this into account by only gathering runtime code while tracing through \scheme{require} expressions.
+The details about how this works is further explained in the operational semantics model in Chapter 3.
+
+With all of the code in a single module, it is easy to see how standard optimizations such as inlining and dead code elminiation can reduce the module to the code in Figure~\ref{main-demod-opt-rkt}.
+\begin{figure}[h]
+\begin{schemedisplay}
+(module main racket/base
+  (#%module-begin
+   (let ((q (.... make-vector .... 1 2 3 4 5 6 ....)))
+     (.... vector-set .... 4 ....)
+     (displayln (.... vector-ref ....))
+     (displayln (.... vector-ref ....)))))
+\end{schemedisplay}
+\caption{\texttt{main.rkt} demodularized and optimized}
+\label{main-demod-opt-rkt}
+\end{figure}
+In this simple example, with constant folding this progam could be optimized even more, but even in programs with dynamic inputs, demodularization enables many optimizations that aren't possible when the program is separated into modules.
+

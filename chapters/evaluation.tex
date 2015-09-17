@@ -1,0 +1,16 @@
+\chapter{Evaluation}
+
+We tested our implementation of demodularization by selecting existing Racket programs and measuring their execution time before and after demodularization.
+We also measured the memory usage and compiled bytecode size of the programs.
+We ran the benchmarks on an Intel Core 2 Quad machine running Ubuntu and ran each program X times.
+We expect programs to perform better based on how modular the program is, which we measure by counting the number of modules in a program's require graph and how many cross module references occur in the program.
+
+Figure XXX shows the results of running this experiment on XXX Racket programs. 
+On one end of the spectrum, there are programs like XXX which are already basically single module programs, so demodularization does little besides rerun the optimizer on the program. Running the optimizer again may have positive or negative effects on performance, it may unroll loops and inline definitions more aggressively the second time, but some of these ``optimizations" may hurt performance.
+On the other end of the spectrum, highly modular programs like XXX perform much better after demodularization.
+We expect performance to increase at a linear or even superlinear pace as modularity increases because of the extra information available to the optimizer.
+
+This experiment uses only the existing Racket optimizations, which are intra-module optimizations.
+Certain optimizations that are not worthwhile to do at the intra-module level have larger payoffs when applied to whole programs. 
+With demodularization, we anticipate that new whole-program optimizations enabled by demodularization will increase performance even more.
+

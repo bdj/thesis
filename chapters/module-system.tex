@@ -1,0 +1,31 @@
+\chapter{The Racket Module System}
+Modules are the basic building block of programs written in Racket.
+A Racket module specifies the language it is written in, definitions, expressions (run for their effect), and imports and exports. 
+Modules usually correspond to files, but multiple modules can be defined in a single file through the use of submodules.
+A module's language controls all aspects of what the module means, from how it is parsed to what it means to do function application. 
+Usually the language definition is just another Racket module. 
+Racket definitions can be normal runtime definitions or compile-time definitions.
+The Racket compiler separates compile-time and runtime definitions into different phases, with compile-time definitions at phase 1 and runtime definitions at phase 0.
+Macros are special definitions with phase 0 bindings, but with phase 1 values. 
+Macros allow programmers to add new features to their programs that can't be added through normal function definitions. 
+Racket also allows for definitions directly at phase 1 so that programmers can write helper code for macros through \racket{begin-for-syntax}.
+
+Imports in Racket use the \racket{require} form, which allows for importing definitions from other modules in a variety of ways. 
+\racket{require} lets the programmer specify which identifiers to import and any renamings to use.
+Also, the programmer can specify at what phase to import another module so they can use other modules to help write macros.
+Exports in Racket use the \racket{provide} form, which has similar features as \racket{require}, such as control over which identifiers are exported, renaming capabilities, and phase shifting capabilities.
+
+The following example illustrates some of the features of the racket module system. 
+
+\emph{TODO: racket module example}
+
+The \texttt{obj.rkt} file contains the \texttt{obj} module.
+The \texttt{obj} module contains a variable definition, and an accessor and mutator function which are exported.
+The \texttt{while-test.rkt} file contains a module written in the \texttt{while-lang} language, which adds a \racket{while} loop form to Racket (Racket has many sophisticated ways to write loops, but none of them use the keyword \racket{while}).
+The \texttt{while-lang} language is just another Racket module, contained in \texttt{while-lang.rkt}.
+The \texttt{while-lang} module defines a \racket{while} loop as a macro that transforms into a combination of a \racket{loop} and an \racket{if}. 
+Also, the module defines a special \mintinline{racket}{#%module-begin} macro which is a hook that will run for every module written in the \texttt{while-lang} language. 
+Next, the module includes a \racket{begin-for-syntax} expression. 
+All of the code written inside a \racket{begin-for-syntax} expression is shifted to phase 1 (compile-time).
+Therefore, the \racket{(update-val)} and \racket{(printf)} expressions will run when the module is compiled. 
+

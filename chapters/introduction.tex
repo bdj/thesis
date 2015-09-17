@@ -1,0 +1,31 @@
+\chapter{Introduction}
+
+Programmers should not have to sacrifice the software engineering goals of modular design and good abstractions for performance. 
+Instead, their tools should make running a well-designed program as efficient as possible. 
+
+Many languages provide features for creating modular programs which enable separate compilation and module reuse.
+Some languages provide expressive macro systems, which enable programmers to extend the compiler in arbitrary ways.
+Combining module systems with expressive macro systems allow programmers to write modular programs with each module written in its own domain-specific language.
+A compiler for such a language must ensure that modular programs have the same meaning independent of the order in which the modules are compiled.
+A phased module system, like the one described by Flatt \cite{Flatt} for Racket, is a way to allow both separately compiled modules and expressive macros in a language.
+
+Modular programs are difficult to optimize because the compiler has little to no information about values that come from other modules when compiling a single module.
+Existing optimizations have even less information when modules can extend the compiler. 
+Good abstractions are meant to obscure internal implementations so that it is easier for programmers to reason about their programs, but this obscurity also limits information available for optimizations.  
+In contrast, non-modular programs are simpler to optimize because the compiler has information about every value in the program.
+
+Some languages avoid the problem of optimizing modular programs by not allowing modules, while others do optimizations at link time, and others use inlining. 
+Not allowing modules defeats the benefits of modular design. 
+Link time optimizations can be too low level to do useful optimizations. 
+Inlining must be heuristic-based, and good heuristics are hard to develop. 
+
+Our solution for optimizing modular programs, called demodularization, is to transform a modular program into a non-modular program by combining all runtime code and data in the program into a single module.
+In a phased module system, finding all of the runtime values is not trivial.
+Phased module systems allow programmers to refer to the same module while writing compiler extensions and while writing normal programs.
+A demodularized program does not need to include modules that are only needed during compile-time, but whether or not the module is needed only at compile-time is not obvious from just examining the module in isolation. 
+
+A program with a single module is effectively a non-modular program. After demodularization, a program becomes a single module, so existing optimizers have more information. Also, demodularization enables new optimizations that need whole program information. 
+
+We provide an operational semantics for a simple language with a phased module system, and argue that the demodularization process preserves program meaning. We also provide an implementation of demodularization for the Racket programming language, and verify experimentally that programs perform better after demodularization.
+
+We explain demodularization at a high level with a detailed example (Chapter 2). Next, we use the operational semantics model of the demodularization process to explain why demodularization is correct (Chapter 3), then describe an actual implementation for Racket (Chapter 4), followed by experimental results of demodularizing and optimizing real-world Racket programs (Chapter 5). The operational semantics model removes the unnecessary details of the full implementation so the demodularization process is easier to understand and verify. The actual implementation presents interesting difficulties that the model does not. The experimental results show that demodularization improves performance, especially when a program is highly modular. 

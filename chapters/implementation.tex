@@ -1,0 +1,19 @@
+\chapter{Implementation}
+
+The demodularization algorithm for the Racket module system operates on Racket bytecode. 
+Racket's bytecode format is one step removed from the fully-expanded kernel language: instead of identifiers for bindings, it uses locations.
+For toplevel bindings, these locations point to memory allocated for each module known as the module's prefix.
+So, in \texttt{long-queue.rkt}, \racket{make-long-queue} would be in prefix location 0 and \racket{long-enqueue} would be in prefix location 1, and all the references to \racket{make-long-queue} and \racket{long-enqueue} are replaced with references to 0 and 1.
+Like in the model, the algorithm combines all phase 0 code into a single module, but since the references are locations instead of identifiers, the locations of different modules overlap.
+We solve this by extending the prefix of the main module to have locations for the required module's toplevel identifiers, and then adjusting the toplevel references in the required module to those new locations. 
+
+After combining all the code for a program into a single module, we want to optimize it.
+The existing optimizations for Racket operate on an intermediate form that is part way between fully-expanded code and bytecode. 
+Therefore, to hook into the existing optimizations, we decompile the bytecode of the demodularized program into the intermediate form and then run it through the optimizer to produce bytecode once more.
+
+Racket provides features that treat modules as first-class objects during runtime. 
+For example, programs can load and evaluate modules at runtime through \racket{dynamic-require}. 
+These features can work with demodularization, but the onus is on the programmer to make sure to use the features in particular ways.
+The main restriction is that the program cannot share a module that is part of the demodularized program and also part of a dynamically required module. 
+This restriction may seem easy to follow in theory, but in practice it is hard because most modules rely on built-in Racket libraries that will be in both the static and dynamic parts of the program.
+

@@ -5,3 +5,5 @@
 *.lol
 *.lot
 *.toc
+*.swp
+build/
