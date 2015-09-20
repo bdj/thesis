@@ -1,5 +1,5 @@
 #lang racket/base
-(provide val update-val)
+(provide get-val set-val!)
 (define x 0)
-(define (val) x)
-(define (update-val) (set! x (add1 x)))
+(define (get-val) x)
+(define (set-val! v) (set! x v))

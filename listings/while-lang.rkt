@@ -19,9 +19,8 @@
           (loop))
         (void))))
 
-(begin-for-syntax
-  (update-val)
-  (update-val)
-  (printf "compile-time val is ~a\n" (val)))
+(set-val! 5)
 
-(update-val)
+(begin-for-syntax
+  (set-val! 2)
+  (printf "compile-time val is ~a\n" (get-val)))

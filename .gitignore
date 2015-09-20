@@ -7,3 +7,5 @@
 *.toc
 *.swp
 build/
+*~
+**/compiled
