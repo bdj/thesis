@@ -5,9 +5,9 @@
 \node (obj-comp)   [module] {obj (compile-time)};
 \node (obj-run)    [module] [below=of obj-comp] {obj (runtime)};
 \node (while-lang) [module] [left=of obj-run] {while-lang}
-  edge [->] node[auto]{\racket{require}} (obj-run)
-  edge [->] node[auto]{\racket{for-syntax}} (obj-comp);
+  edge [->, thick] node[auto]{\racket{require}} (obj-run)
+  edge [->, thick] node[auto]{\racket{for-syntax}} (obj-comp);
 \node (while-test) [module] [below=of while-lang] {while-test}
-  edge [->] node[auto]{\texttt{\#lang}} (while-lang) 
-  edge [->, bend right] node[swap,auto]{\racket{require}} (obj-run.south);
+  edge [->, thick] node[auto]{\texttt{\#lang}} (while-lang) 
+  edge [->, thick, bend right] node[swap,auto]{\racket{require}} (obj-run.south);
 \end{tikzpicture}

@@ -19,8 +19,11 @@
           (loop))
         (void))))
 
+(printf "runtime val was ~a " (get-val))
 (set-val! 5)
+(printf "and is now ~a\n" (get-val))
 
 (begin-for-syntax
+  (printf "compile-time val was ~a " (get-val))
   (set-val! 2)
-  (printf "compile-time val is ~a\n" (get-val)))
+  (printf "and is now ~a\n" (get-val)))
