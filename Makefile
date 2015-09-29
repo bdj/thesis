@@ -2,7 +2,7 @@ all: thesis.pdf
 
 CHAPTERS=introduction.tex module-system.tex intuition.tex model.tex implementation.tex evaluation.tex related-work.tex conclusion.tex
 
-LISTINGS=obj.rkt while-lang.rkt while-test.rkt output.tex
+LISTINGS=obj.rkt while-lang.rkt while-test.rkt output.tex while-macro.rkt
 
 FIGURES=modules.tex
 

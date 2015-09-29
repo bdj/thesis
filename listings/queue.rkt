@@ -1,4 +1,3 @@
-\begin{schemedisplay}
 #lang racket/base
 (require (for-syntax racket/base
                      racket/syntax)
@@ -25,4 +24,3 @@
            e ...))]))
 
 (provide with-queue)
-\end{schemedisplay} 

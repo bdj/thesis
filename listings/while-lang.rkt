@@ -1,29 +1,20 @@
 #lang racket/base
 (require (for-syntax racket/base
-                     "obj.rkt")
-         "obj.rkt")
-(provide (except-out (all-from-out racket/base) #%module-begin)
-         (rename-out [module-begin #%module-begin])
+                     "counter.rkt"))
+(provide (all-from-out racket/base) 
          while)
 
-(define-syntax-rule (module-begin body ...)
-  (#%module-begin
-   (printf "This is a while program\n")
-   body ...))
-
-(define-syntax-rule (while test body ...)
-  (let loop ()
-    (if test
-        (begin
-          body ...
-          (loop))
-        (void))))
-
-(printf "runtime val was ~a " (get-val))
-(set-val! 5)
-(printf "and is now ~a\n" (get-val))
-
-(begin-for-syntax
-  (printf "compile-time val was ~a " (get-val))
-  (set-val! 2)
-  (printf "and is now ~a\n" (get-val)))
+(define-syntax (while stx)
+  (syntax-case stx ()
+    [(while test body ...)
+     (begin
+       (for-each count-up 
+                 (syntax->list #'(body ...)))
+       (printf "while loop contains ~a expressions\n"
+               (get-counter-val))
+       #'(let loop ()
+           (if test
+             (begin
+               body ...
+               (loop))
+             (void))))]))
