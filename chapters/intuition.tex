@@ -1,17 +1,24 @@
-\chapter{Motivation and Intuition}
-\section{Demodularization}
-\section{Optimization}
+\chapter{Intuition}
+Demodularization is the process of collecting all phase 0 code required by a program into a single module.
+This is done by tracing through the \racket{require} graph starting at a program's main module.
+The following example program illustrates the need for demodularization and how it is done.
+
+\section{Example Program}
+A programmer wants to use a queue library where the library uses different backing structures depending on the length of the queue. 
+Listing~\ref{lst:main.rkt} shows an example of using such a library.
 \begin{listing}
   \inputminted{racket}{listings/main.rkt}
   \caption{\texttt{main.rkt} module with queue usage}
   \label{lst:main.rkt}
 \end{listing}
-
+The library is implemented as a macro, show in Listing~\ref{lst:queue.rkt}, that switches between two implementatations depending on the length of the initial queue.
 \begin{listing}
   \inputminted{racket}{listings/queue.rkt}
   \caption{\texttt{queue.rkt} module}
   \label{lst:queue.rkt}
 \end{listing}
+Listing~\ref{lst:long-queue.rkt} and Listing~\ref{lst:short-queue.rkt} show the two queue implementations, with the \texttt{long-queue} using vectors and the \texttt{short-queue} using lists. 
+The \racket{....} signifies elided code.
 
 \begin{listing}
   \inputminted{racket}{listings/long-queue.rkt}
@@ -25,11 +32,29 @@
   \label{lst:short-queue.rkt}
 \end{listing}
 
+
+\section{Compilation}
+
+Compiling this program involves expanding the \racket{with-queue} macro, which will turn the program into Listing~\ref{main-expanded.rkt}.
+
 \begin{listing}
   \inputminted{racket}{listings/main-expanded.rkt}
   \caption{\texttt{main.rkt} module after macro expansion}
   \label{lst:main-expanded.rkt}
 \end{listing}
+
+The expanded program contains references to \racket{long-queue} operations because the length of the initial queue was over 5.
+While the expanded program is not the same as a fully compiled program, it can stand in for one with regard to optimization and demodularization.
+
+With the expanded program, it is possible to see how cross-module optimizations would be difficult.
+The program has calls to functions in the \racket{long-queue} module, so the optimizer does not have access to the definitions of the functions while finishing the compilation of the main module.
+
+\section{Demodularization}
+
+Demodularization of the program proceeds by following the \racket{require} graph and including phase 0 code. 
+The \racket{main} module requires the \racket{queue} module, but the \racket{queue} module only has phase 1 code, so it is not included in the final module.
+The \racket{queue} module requires the \racket{long-queue} and \racket{short-queue} modules, which have various phase 0 definitions that get included in the order they appear in their original modules.
+Listing~\ref{lst:main-demodularized.rkt} shows what the demodularized example program would look like.
 
 \begin{listing}
   \inputminted{racket}{listings/main-demodularized.rkt}
@@ -37,8 +62,19 @@
   \label{lst:main-demodularized.rkt}
 \end{listing}
 
+The demodularized program should have the exact same behavior at runtime as the modular program.
+At this point, the only thing that changes is that the Racket runtime does not need to follow the \racket{require} graph because allphase 0 definitions and expressions are in a single module.
+
+\section{Optimization}
+
+After a program has been demodularized, the optimizer now has all the information it needs to do optimizations on the whole program.
+Listing~\ref{lst:main-optimized.rkt} shows what the example program would look like after optimization.
+
 \begin{listing}
   \inputminted{racket}{listings/main-optimized.rkt}
   \caption{\texttt{main.rkt} module after optimization}
   \label{lst:main-optimized.rkt}
 \end{listing}
+
+The optimizer is able to inline the various functions because it has access to all of the definitions within the module.
+Therefore, demodularization enables optimization by providing the optimizer access to the whole program in one place.
