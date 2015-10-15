@@ -1,19 +1,71 @@
 \chapter{Implementation}
 
-The demodularization algorithm for the Racket module system operates on Racket bytecode. 
-Racket's bytecode format is one step removed from the fully-expanded kernel language: instead of identifiers for bindings, it uses locations.
-For toplevel bindings, these locations point to memory allocated for each module known as the module's prefix.
-So, in \texttt{long-queue.rkt}, \racket{make-long-queue} would be in prefix location 0 and \racket{long-enqueue} would be in prefix location 1, and all the references to \racket{make-long-queue} and \racket{long-enqueue} are replaced with references to 0 and 1.
-Like in the model, the algorithm combines all phase 0 code into a single module, but since the references are locations instead of identifiers, the locations of different modules overlap.
-We solve this by extending the prefix of the main module to have locations for the required module's toplevel identifiers, and then adjusting the toplevel references in the required module to those new locations. 
+The implementation of demodularization for the Racket module system is included in the Racket distribution as part of the build tool \racket{raco}. 
+Users can pass in a module they would like to demodularize and optmize to the tool and it will compile all the necessary modules, run the demodularization algorithm on them, decompile the resulting module, and run optimizations on it to produce the final module.
+The demodularization algorithm runs on compiled modules, which are stored in Racket bytecode files.
 
-After combining all the code for a program into a single module, we want to optimize it.
-The existing optimizations for Racket operate on an intermediate form that is part way between fully-expanded code and bytecode. 
-Therefore, to hook into the existing optimizations, we decompile the bytecode of the demodularized program into the intermediate form and then run it through the optimizer to produce bytecode once more.
+\section{Racket bytecode}
+Racket bytecode is different from most other forms of bytecode in that it mostly maintains the structure of the abstract syntax tree from the original program.
+The main aspect that changes between fully-expanded Racket programs and Racket bytecode is the use of stack positions instead of variables and the addition of stack-manipulating instructions.
+A full explanation of Racket bytecode and what it means can be found in \ref{}.
+
+Also, a table is created in the bytecode for the top level bindings in a module, which is known as the prefix.
+All top level bindings have an entry in the prefix, including bindings that come from other modules, and any use of a top level binding in a program is replaced with a numeric reference to the entry.
+Listing~\ref{lst:kernel.rkt} shows a simple program written in the most basic language that Racket supports: the \racket{kernel} language.
+\begin{listing}
+  \inputminted{racket}{listings/kernel.rkt}
+  \caption{Example program written in \racket{kernel} language}
+  \label{lst:kernel.rkt}
+\end{listing}
+When this code is compiled, it turns into the bytecode in Listing~\ref{kernel-bytecode.rkt}. 
+\begin{listing}
+  \inputminted{racket}{listings/kernel-bytecode.rkt}
+  \caption{Bytecode representation of program from Listing~\ref{lst:kernel.rkt}}
+  \label{lst:kernel-bytecode.rkt}
+\end{listing}
+
+In the bytecode, all references to the variable \racket{y} have been replaced with references to the prefix in the form of \racket{(toplevel 0)}. 
+All references to \racket{displayln} have also been replaced with \racket{(toplevel 1)} references, which in turn references element \racket{7} of the prefix of the \racket{racket/private/misc} module.
+The references to \racket{x} are now all different because the stack changes between each usage of \racket{x}.
+
+\section{Demodularization}
+
+The implementation of demodularization for the Racket module system is written in Racket and consumes and produces Racket bytecode.
+The library for reading and writing Racket bytecode in Racket was mainly used for debugging purposes and was incomplete, so the first task was to fully implement the Racket bytecode library.
+
+The actual algorithm for demodularization is similar to the model in the previous chapter in that it traces requires and includes all phase 0 code in the final module, but it also has to deal with the module prefix and references to the prefix.
+When the algorithm includes a required module, it also includes that module's prefix appended to the end of the main module's prefix. 
+Then, it must adjust all references in that module's code to point at the new combined prefix.
+Also, the algorithm tracks cross-module references and rewrites them to point to the new prefix as well.
+In the example in Listing~\ref{lst:kernel-bytecode.rkt}, when the algorithm includes the module \racket{racket/private/misc} it must rewrite the reference to \racket{(toplevel 1)} to whatever the new position for \racket{displayln} is in the combined prefix.
+
+\section{Optimization}
+
+For demodularization to be useful, the program needs to be optimized after demodularizing it.
+To optmize the demodularized bytecode, we wanted the existing Racket optimizer built into the Racket compiler so that we get all existing optimizations ``for free'' and any new optimizations in the future will work on both regularly compiled and demodularized programs.
+The existing optimizer works on an intermediate form between fully-expanded Racket code and Racket bytecode.
+This intermediate form only exists as C data structures in the implementation of Racket.
+Therefore, to use the existing optimizer, Racket bytecode needed to be decompiled into this intermediate form. 
+
+\section{Decompilation}
+
+The decompiler was written in C, so that it could interoperate with the optimizer.
+There are three main differences between Racket bytecode and the intermediate form: stack positions, cyclic closures, and reference arguments.
+In Racket bytecode and in the intermediate form, all references to bindings are numeric, but in bytecode the references are stack positions and in the intermediate form the references are lexical.
+For example, the bytecode in Listing~\ref{lst:kernel-bytecode} has three references to \racket{x}, in the form of \racket{(install-value 0 5)}, \racket{(local 1)}, and \racket{(local 3)}. 
+In the intermediate form, all of these references to \racket{x} should be \racket{0}.
+
+Racket bytecode allows for cyclic closures, or closures which contain a reference to themselves.
+Nothing like this exists in the intermediate form, so to decompile cyclic closures, the decompiler creates a new top level definition for the closure and replaces references to the closure (including the self-references) with references to the top level definition.
+% TODO: maybe an example of this as well
+
+Finally, Racket bytecode allows reference arguments (like C++ reference arguments) in functions, but the intermediate form doesn't allow them.
+The decompiler turns reference arguments into \racket{case-lamdba} closures over the reference arguments with one case for getting the argument value and one case for setting the argument value. 
+
+\section{Limitations}
 
 Racket provides features that treat modules as first-class objects during runtime. 
 For example, programs can load and evaluate modules at runtime through \racket{dynamic-require}. 
-These features can work with demodularization, but the onus is on the programmer to make sure to use the features in particular ways.
-The main restriction is that the program cannot share a module that is part of the demodularized program and also part of a dynamically required module. 
-This restriction may seem easy to follow in theory, but in practice it is hard because most modules rely on built-in Racket libraries that will be in both the static and dynamic parts of the program.
+Because the demodularizer cannot know ahead of time what modules might be loaded at runtime, it disallows programs that use \racket{dynamic-require}.
+If the modules loaded through \racket{dynamic-require} were completely separate (meaning they do not share any required modules) from the main program, it would be possible to demodularize the program, but in practice most modules required at runtime will share with the main program.
 

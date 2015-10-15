@@ -2,9 +2,9 @@ all: thesis.pdf
 
 CHAPTERS=introduction.tex module-system.tex intuition.tex model.tex implementation.tex evaluation.tex related-work.tex conclusion.tex
 
-LISTINGS=counter.rkt while-lang.rkt while-test.rkt output.tex while-macro.rkt
+LISTINGS=counter.rkt while-lang.rkt while-test.rkt output.tex while-macro.rkt kernel.rkt kernel-bytecode.rkt
 
-FIGURES=modules.tex
+FIGURES=modules.tex demod-redex.pdf
 
 CHAPTERS_DIR=$(addprefix chapters/,$(CHAPTERS))
 LISTINGS_DIR=$(addprefix listings/,$(LISTINGS))
