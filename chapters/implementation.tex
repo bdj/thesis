@@ -9,6 +9,7 @@ Racket bytecode is different from most other forms of bytecode in that it mostly
 The main aspect that changes between fully-expanded Racket programs and Racket bytecode is the use of stack positions instead of variables and the addition of stack-manipulating instructions.
 A full explanation of Racket bytecode and what it means can be found in \ref{}.
 
+% TODO: Don't start a paragraph with Also
 Also, a table is created in the bytecode for the top level bindings in a module, which is known as the prefix.
 All top level bindings have an entry in the prefix, including bindings that come from other modules, and any use of a top level binding in a program is replaced with a numeric reference to the entry.
 Listing~\ref{lst:kernel.rkt} shows a simple program written in the most basic language that Racket supports: the \racket{kernel} language.
@@ -23,6 +24,7 @@ When this code is compiled, it turns into the bytecode in Listing~\ref{kernel-by
   \caption{Bytecode representation of program from Listing~\ref{lst:kernel.rkt}}
   \label{lst:kernel-bytecode.rkt}
 \end{listing}
+% TODO: comment on primval
 
 In the bytecode, all references to the variable \racket{y} have been replaced with references to the prefix in the form of \racket{(toplevel 0)}. 
 All references to \racket{displayln} have also been replaced with \racket{(toplevel 1)} references, which in turn references element \racket{7} of the prefix of the \racket{racket/private/misc} module.
@@ -38,10 +40,12 @@ When the algorithm includes a required module, it also includes that module's pr
 Then, it must adjust all references in that module's code to point at the new combined prefix.
 Also, the algorithm tracks cross-module references and rewrites them to point to the new prefix as well.
 In the example in Listing~\ref{lst:kernel-bytecode.rkt}, when the algorithm includes the module \racket{racket/private/misc} it must rewrite the reference to \racket{(toplevel 1)} to whatever the new position for \racket{displayln} is in the combined prefix.
+% TODO: show a demod example
 
 \section{Optimization}
 
 For demodularization to be useful, the program needs to be optimized after demodularizing it.
+% TODO: relate back to thesis rather than say we wanted
 To optmize the demodularized bytecode, we wanted the existing Racket optimizer built into the Racket compiler so that we get all existing optimizations ``for free'' and any new optimizations in the future will work on both regularly compiled and demodularized programs.
 The existing optimizer works on an intermediate form between fully-expanded Racket code and Racket bytecode.
 This intermediate form only exists as C data structures in the implementation of Racket.
@@ -53,6 +57,7 @@ The decompiler was written in C, so that it could interoperate with the optimize
 There are three main differences between Racket bytecode and the intermediate form: stack positions, cyclic closures, and reference arguments.
 In Racket bytecode and in the intermediate form, all references to bindings are numeric, but in bytecode the references are stack positions and in the intermediate form the references are lexical.
 For example, the bytecode in Listing~\ref{lst:kernel-bytecode} has three references to \racket{x}, in the form of \racket{(install-value 0 5)}, \racket{(local 1)}, and \racket{(local 3)}. 
+% TODO: explain why they should all be 0
 In the intermediate form, all of these references to \racket{x} should be \racket{0}.
 
 Racket bytecode allows for cyclic closures, or closures which contain a reference to themselves.
@@ -62,6 +67,8 @@ Nothing like this exists in the intermediate form, so to decompile cyclic closur
 Finally, Racket bytecode allows reference arguments (like C++ reference arguments) in functions, but the intermediate form doesn't allow them.
 The decompiler turns reference arguments into \racket{case-lamdba} closures over the reference arguments with one case for getting the argument value and one case for setting the argument value. 
 
+% TODO: how to know if it works (verification) paragraph
+
 \section{Limitations}
 
 Racket provides features that treat modules as first-class objects during runtime. 
@@ -69,3 +76,4 @@ For example, programs can load and evaluate modules at runtime through \racket{d
 Because the demodularizer cannot know ahead of time what modules might be loaded at runtime, it disallows programs that use \racket{dynamic-require}.
 If the modules loaded through \racket{dynamic-require} were completely separate (meaning they do not share any required modules) from the main program, it would be possible to demodularize the program, but in practice most modules required at runtime will share with the main program.
 
+% TODO: in practice what does this mean

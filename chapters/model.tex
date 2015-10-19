@@ -59,12 +59,14 @@ The first list of \racket{(id phase)} pairs is the list of modules to evaluate, 
 The reduction rules in Figure~\ref{fig:eval-reduction} evaluate a compiled program that starts with an empty heap, the program code, a stack that contains the identifier of the main module at phase 0, and an empty completed module list. 
 
 % TODO: re-render without red
+% TODO: maybe needs a rewrite to capture meaning better (Jay's example)
 \begin{figure}[h]
 \includegraphics[width=\textwidth]{figures/eval-reduction}
 \caption{Modular evaluation}
 \label{fig:eval-reduction}
 \end{figure}
 
+% TODO: explain that phases are relative
 The \emph{module require} rule matches a program with a \racket{require} expression in the module at the top of the evaluation stack and evaluates it by removing the \racket{require} expression from the module and pushing the required module onto the evaluation stack with the phase shifted appropriately.
 The current module is still on the stack and will continue evaluating after the required module is done evaluating.
 The subsequent rules all apply only when the phase relative to the main module is zero.
@@ -101,7 +103,7 @@ The third rule removes an entry from the working list when the module has no mor
 The final four rules rearrange the program's module list so that modules that require each other are adjacent in the list and the other rules can apply.
 
 \section{Equivalence}
-
+% TODO: state an actual property and give a proof sketch
 We claim that the programs will evaluate to the same answers before and after demodularization. 
 This is because the demodularization algorithm is a type of partial program evaluation, doing the same work that the evaluator does but before the program is run.
 Specifically, the demodularizer makes it so the \emph{module require} rule of the evaluator never applies because all requires have been inlined.

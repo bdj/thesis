@@ -1,5 +1,6 @@
 \chapter{The Racket Module System}
 
+% TODO: rewrite this section
 \section{The Racket Programming Language}
 The Racket Programming Language is descended from LISP~\ref{} and Scheme~\ref{}.
 Therefore, Racket's syntax is based on s-expressions (although it is possible to change this).
@@ -7,6 +8,7 @@ Racket provides many language features, such as closures, first-class continuati
 The main implementation of Racket is a virtual machine with Just-In-Time compilation. 
 The real power of Racket comes from the idea of Languages as Libraries~\ref{}, where a programmer adds features to the language by writing Racket code that extends the compiler.
 
+% TODO: mention that programs can extend themselves in the same file
 \section{Macros}
 Macros are the main way programmers add new features to Racket. 
 Esentially, macros are functions (known as transformers) whose domain and range are syntax objects.
@@ -16,14 +18,18 @@ Racket provides pattern-matching for syntax objects that makes writing macros si
 
 The simplest way to write a macro is to use \racket{define-syntax-rule}.
 \racket{define-syntax-rule} has two arguments, the first is a pattern of syntax to match and the second is what that syntax should transform into.
+% TODO: example should use a function or letrec, not let loop
+% TODO: maybe just use syntax-case here
 \begin{listing}
   \inputminted{racket}{listings/while-macro.rkt}
   \caption{A macro implementation of a \racket{while} loop}
   \label{lst:while-macro.rkt}
 \end{listing}
 Listing~\ref{lst:while-macro.rkt} shows how to use one of these macros to write a \racket{while} loop. 
+% TODO: include a macro use and expansion
 The first argument models what a while loop will look like in use, which will be a \racket{while} identifier, followed by a \racket{test} expression that will be tested each time through the loop, followed by zero or more expressions to run in the body of the while loop.
 This transforms into a \racket{let} combined with an \racket{if}, with whatever syntax the programmer put in for \racket{test} and \racket{body ...} being substituted into the output.
+% TODO: fuller explanation of hygeine with citation
 Racket's macros are hygenic, which in this case means that even if the code passed in as the body contains a \racket{loop} variable, it will not clash with the value from the macro.
 
 \section{Modules}
@@ -83,6 +89,7 @@ Phase 0 is the execution phase of the main module of a program, what could be co
 Phase 1 is the compilation phase of the main module, which could include execution of code inside macros. 
 Phase 2 is the compiliation phase of any modules that need to execute during phase 1, and higher phases are used as needed to compile and run code used in lower phases.
 % TODO: awkward sentence
+% TODO: maybe explain for-template better (first time introduced)
 It is possible for modules to reference modules at higher phases by using the \racket{for-syntax} form as seen above, and it is also possible to reference modules at lower phases by using the \racket{for-template} form.
 
 In the example above, the \racket{while-test} module is compiled at phase 1, which triggers compilation of the \racket{counter} module at phase 2, so that the \racket{counter} module can be instantiated at phase 1 to count how many expressions are in the \racket{while} loop.
