@@ -309,7 +309,7 @@
 %
 % If we are showing a list of listings, then we need to include the listings package
 \if@needlistings
-    \RequirePackage{listings}%
+\RequirePackage[outputdir=build]{minted}%
 \fi
 %
 % If we are showing layout grids, then we include the appropriate package and
@@ -712,19 +712,25 @@
 }%
 %
 \if@lol
-\renewcommand{\lstlistlistingname}{List of Listings}
-\renewcommand{\lstlistoflistings}{%
-    \if@twosidetoc
-        \clearpage@forchapter
-    \else
-        \clearpage
-    \fi
+\renewcommand{\listoflistings}{%
+    \cleardoublepage
     \refstepcounter{toclistings}
-    \addcontentsline{toc}{chapter}{\lstlistlistingname}
-    \@tocheader{\lstlistlistingname}%
-    \@starttoc{lol}%
-    \newpage
+    \addcontentsline{toc}{chapter}{\listoflistingscaption}%
+    \listof{listing}{\listoflistingscaption}%
 }%
+%\renewcommand{\lstlistlistingname}{List of Listings}
+%\renewcommand{\lstlistoflistings}{%
+%    \if@twosidetoc
+%        \clearpage@forchapter
+%    \else
+%        \clearpage
+%    \fi
+%    \refstepcounter{toclistings}
+%    \addcontentsline{toc}{chapter}{\lstlistlistingname}
+%    \@tocheader{\lstlistlistingname}%
+%    \@starttoc{lol}%
+%    \newpage
+%}%
 \fi
 %
 \newcommand{\@separatorpage}{%
@@ -916,7 +922,7 @@
                 \listoftables
             \fi
             \if@lol
-                \lstlistoflistings
+                \listoflistings
             \fi
             \if@twosidetoc\else
                 % If we start two-sided printing after the various tables (body
