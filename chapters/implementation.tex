@@ -1,4 +1,5 @@
 \chapter{Implementation}
+\label{chap:implementation}
 
 The implementation of demodularization for the Racket module system is included in the Racket distribution as part of the build tool \racket{raco}. 
 Users can pass in a module they would like to demodularize and optmize to the tool and it will compile all the necessary modules, run the demodularization algorithm on them, decompile the resulting module, and run optimizations on it to produce the final module.
@@ -9,8 +10,8 @@ Racket bytecode is different from most other forms of bytecode in that it mostly
 The main aspect that changes between fully-expanded Racket programs and Racket bytecode is the use of stack positions instead of variables and the addition of stack-manipulating instructions.
 A full explanation of Racket bytecode and what it means can be found in \ref{}.
 
-% TODO: Don't start a paragraph with Also
-Also, a table is created in the bytecode for the top level bindings in a module, which is known as the prefix.
+% DONE: Don't start a paragraph with Also
+A table is created in the bytecode for the top level bindings in a module, which is known as the prefix.
 All top level bindings have an entry in the prefix, including bindings that come from other modules, and any use of a top level binding in a program is replaced with a numeric reference to the entry.
 Listing~\ref{lst:kernel.rkt} shows a simple program written in the most basic language that Racket supports: the \racket{kernel} language.
 \begin{listing}
@@ -24,11 +25,12 @@ When this code is compiled, it turns into the bytecode in Listing~\ref{kernel-by
   \caption{Bytecode representation of program from Listing~\ref{lst:kernel.rkt}}
   \label{lst:kernel-bytecode.rkt}
 \end{listing}
-% TODO: comment on primval
 
+% DONE: comment on primval
 In the bytecode, all references to the variable \racket{y} have been replaced with references to the prefix in the form of \racket{(toplevel 0)}. 
 All references to \racket{displayln} have also been replaced with \racket{(toplevel 1)} references, which in turn references element \racket{7} of the prefix of the \racket{racket/private/misc} module.
 The references to \racket{x} are now all different because the stack changes between each usage of \racket{x}.
+The references to \racket{random} and \racket{+} are replaced with references to primitive implementations in the Racket runtime. 
 
 \section{Demodularization}
 
