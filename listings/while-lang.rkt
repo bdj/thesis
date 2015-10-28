@@ -1,8 +1,7 @@
 #lang racket/base
 (require (for-syntax racket/base
                      "counter.rkt"))
-(provide (all-from-out racket/base) 
-         while)
+(provide while)
 
 (define-syntax (while stx)
   (syntax-case stx ()
@@ -12,9 +11,9 @@
                  (syntax->list #'(body ...)))
        (printf "while loop contains ~a expressions\n"
                (get-counter-val))
-       #'(let loop ()
-           (if test
-             (begin
+       #'(begin
+           (define (while-loop)
+             (when test
                body ...
-               (loop))
-             (void))))]))
+               (while-loop)))
+           (while-loop)))]))

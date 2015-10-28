@@ -19,8 +19,8 @@ The library is implemented as a macro, show in Listing~\ref{lst:queue.rkt}, that
   \label{lst:queue.rkt}
 \end{listing}
 Listing~\ref{lst:long-queue.rkt} and Listing~\ref{lst:short-queue.rkt} show the two queue implementations, with the \texttt{long-queue} using vectors and the \texttt{short-queue} using lists. 
-% TODO: say that ... is actual racket syntax
-The \racket{....} signifies elided code.
+% DONE: say that ... is actual racket syntax
+The \racket{....} signifies elided code (but \racket{...} has meaning in racket).
 
 \begin{listing}
   \inputminted{racket}{listings/long-queue.rkt}
@@ -37,7 +37,7 @@ The \racket{....} signifies elided code.
 
 \section{Compilation}
 
-Compiling this program involves expanding the \racket{with-queue} macro, which will turn the program into Listing~\ref{main-expanded.rkt}.
+Compiling this program involves expanding the \racket{with-queue} macro, which will turn the program into Listing~\ref{lst:main-expanded.rkt}.
 
 \begin{listing}
   \inputminted{racket}{listings/main-expanded.rkt}
@@ -64,9 +64,11 @@ Listing~\ref{lst:main-demodularized.rkt} shows what the demodularized example pr
   \label{lst:main-demodularized.rkt}
 \end{listing}
 
-% TODO: make a point that extra queue implementation is there
+% DONE: make a point that extra queue implementation is there
 The demodularized program should have the exact same behavior at runtime as the modular program.
-At this point, the only thing that changes is that the Racket runtime does not need to follow the \racket{require} graph because allphase 0 definitions and expressions are in a single module.
+At this point, the only thing that changes is that the Racket runtime does not need to follow the \racket{require} graph because all phase 0 definitions and expressions are in a single module.
+Also, both queue implementations appear in the demodularized program even though only one of them is used.
+
 
 \section{Optimization}
 
@@ -79,6 +81,7 @@ Listing~\ref{lst:main-optimized.rkt} shows what the example program would look l
   \label{lst:main-optimized.rkt}
 \end{listing}
 
-% TODO: point out that the dead code is eliminated
+% DONE: point out that the dead code is eliminated
 The optimizer is able to inline the various functions because it has access to all of the definitions within the module.
+The optimizer also removes the extra queue implementation because it is dead code.
 Therefore, demodularization enables optimization by providing the optimizer access to the whole program in one place.

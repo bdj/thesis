@@ -1,13 +1,13 @@
 \chapter{The Racket Module System}
 \label{chap:module-system}
 
-% TODO: rewrite this section
+% DONE: rewrite this section
 \section{The Racket Programming Language}
-The Racket Programming Language is descended from LISP~\ref{} and Scheme~\ref{}.
-Therefore, Racket's syntax is based on s-expressions (although it is possible to change this).
-Racket provides many language features, such as closures, first-class continuations, macros, contracts, and garbage collection.
-The main implementation of Racket is a virtual machine with Just-In-Time compilation. 
-The real power of Racket comes from the idea of Languages as Libraries~\ref{}, where a programmer adds features to the language by writing Racket code that extends the compiler.
+The Racket Programming Language is a platform for creating powerful abstractions.
+These abstractions are created through the use of Racket's macro and module systems. 
+The macro system, a heritage from LISP~\cite{} and Scheme~\cite{}, allows programmers to add new features to their programs in an integrated way.
+The module system allows programmers to separate their programs into logical parts and hide implementation details. 
+Together, they allow programmers to create Languages as Libraries~\cite{} that are suitable for specific tasks.
 
 % TODO: mention that programs can extend themselves in the same file
 \section{Macros}
@@ -17,22 +17,30 @@ Syntax objects are data structures that contain the raw syntax of a program, alo
 If a programmer needs the power, they can write transformers using all of the features of Racket, as long as the function takes in and produces syntax objects.
 Racket provides pattern-matching for syntax objects that makes writing macros simpler when that is all that a programmer needs.
 
-The simplest way to write a macro is to use \racket{define-syntax-rule}.
-\racket{define-syntax-rule} has two arguments, the first is a pattern of syntax to match and the second is what that syntax should transform into.
-% TODO: example should use a function or letrec, not let loop
-% TODO: maybe just use syntax-case here
+The \racket{define-syntax} form is used to identify a macro definition that is a funtion from syntax to syntax.
+The helper function, \racket{syntax-case} matches syntax patterns so that it is easy to use them in the output of the macro.
+
+% DONE: example should use a function or letrec, not let loop
+% DONE: maybe just use syntax-case here
 \begin{listing}
   \inputminted{racket}{listings/while-macro.rkt}
-  \caption{A macro implementation of a \racket{while} loop}
+  \caption{a macro implementation of a \racket{while} loop}
   \label{lst:while-macro.rkt}
 \end{listing}
 Listing~\ref{lst:while-macro.rkt} shows how to use one of these macros to write a \racket{while} loop. 
-% TODO: include a macro use and expansion
-The first argument models what a while loop will look like in use, which will be a \racket{while} identifier, followed by a \racket{test} expression that will be tested each time through the loop, followed by zero or more expressions to run in the body of the while loop.
-This transforms into a \racket{let} combined with an \racket{if}, with whatever syntax the programmer put in for \racket{test} and \racket{body ...} being substituted into the output.
-% TODO: fuller explanation of hygeine with citation
-Racket's macros are hygenic, which in this case means that even if the code passed in as the body contains a \racket{loop} variable, it will not clash with the value from the macro.
-
+The macro turns a \racket{while} loop into a recursive function and a call to that recursive function.
+Whatever syntax used by the programmer for the \racket{test} and \racket{body ...} forms will be substituted into the output of the macro. 
+Listing~\ref{lst:while-expanded.rkt} shows a use of the while macro and what it expands into after running the macro. 
+\begin{listing}
+  \inputminted{racket}{listings/while-expanded.rkt}
+  \caption{use and expansion of a \racket{while} loop}
+  \label{lst:while-expanded.rkt}
+\end{listing}
+% DONE: example expansion
+% DONE: fuller explanation of hygeine with citation
+Racket's macros are hygenic \cite{}, which means that identifiers created from programs will not clash with identifiers created from macros. 
+In this example that means that the Racket program using a while loop will not be able to call the \racket{while-loop} function that the macro creates, and that if the program has another definition for \racket{while-loop}, it will be independent from the definition introduced by the macro.
+Also, each use of the macro will have distinct definitions for \racket{while-loop} so that the macro can be nested and used multiple times.
 \section{Modules}
 % TODO: all listings are modules in separate files
 Racket modules are a way of grouping definitions, expressions, and macros into groups. 
@@ -60,29 +68,33 @@ For example, if a programmer wanted to change the \racket{while} macro so that i
   \caption{\texttt{while-lang.rkt}: A Racket module implementing a language with \racket{while} loops}
   \label{lst:while-lang.rkt}
 \end{listing}
-The \racket{while} macro has to change to use \racket{syntax-case} so that it is possible to run arbitrary code alongside the pattern-matching functionality.
+It is possible to add code to the \racket{while} macro because it is just a function from syntax to syntax that runs at compile-time. 
 Also, the \racket{require} form includes a \racket{for-syntax} form to indicate that the \texttt{counter} module is needed at compile-time (along with the \racket{racket/base} module for \racket{printf}).
-% TODO: show don't tell for interesting
-The \texttt{while-lang} module also has an interesting \racket{provide} form that exports everything from \racket{racket/base}.
-This export allows programmers to use the \texttt{while-lang} module as a language for other modules, like was done in the \texttt{while-test} module.
+Now this module can be used to extend the language of other programs by adding a \racket{while} loop, but it is just a library that is included like any other library.
 
 \section{Languages}
 % TODO: Rewrite this section, it sucks
 The ability to use modules as languages allows programmers to write specialized domain-specific languages (DSLs) to better express solutions to domain problems. 
 % TODO: akward sentence
-Using this ability, programmers have added languages for Typed Racket~\ref{}, Object-Oriented Racket~\ref{}, Logic Programming~\ref{}, and more~\ref{}.
+Using this ability, programmers have added languages for Typed Racket~\cite{}, Object-Oriented Racket~\cite{}, Logic Programming~\cite{}, and more~\cite{}.
 Also, because they are modules, it is possible to use them all in the same program and use the right language for each specific problem.
-The language creating facilities of Racket extend to more than just collections of functions and macros; they also allow changing the parser and changing the meaning of things like function application. 
+The language creating facilities of Racket extend to more than just collections of functions and macros; they also allow changing the parser and changing the meaning of things like function application syntax. 
 
 \section{Separate Compiliation}
 In the presence of macros that can run arbitrary code, compilation of a single module becomes complicated. 
 Compilation and execution of code has to be interleaved in order to produce the correct compiled program.
-% TODO: explain that listings form a program with multiple modules and while-test is main
-% TODO: run on sentence
-% TODO: include module dependency figure
-In the program with the main module \racket{while-test} above, both the \racket{while-lang} and \racket{counter} need to be compiled before \racket{while-test}, but also the \racket{counter} module needs to be compiled and ready to use while compiling \racket{while-test} because the counter functions are used inside the \racket{while} macro.
+% DONE: explain that listings form a program with multiple modules and while-test is main
+% DONE: include module dependency figure
+All of the listings in the previous section form a program with the \racket{while-test} module as the main module.
+Figure~\ref{fig:modules.tex} shows the relationship between the different modules in the program.
+\begin{figure}
+  \input{figures/modules.tex}
+  \caption{Module dependencies for the \racket{while-test} program}
+  \label{fig:modules.tex}
+\end{figure}
+To compile the program, both the \racket{while-lang} and \racket{counter} need to be compiled before \racket{while-test}, but also the \racket{counter} module needs to be compiled and ready to use while compiling \racket{while-test} because the counter functions are used inside the \racket{while} macro.
 While compiling \racket{while-test}, the \racket{while} macro will be expanded and code from the \racket{counter} module will run.
-The value of the counter should not be shared between compiling \racket{while-test} and running it.
+The value of the counter is not shared between compiling \racket{while-test} and running it.
 
 \section{Phases}
 The way the Racket module system allows for reliable separate compiliation is by separating compilation and execution into phases.
@@ -95,12 +107,11 @@ It is possible for modules to reference modules at higher phases by using the \r
 
 In the example above, the \racket{while-test} module is compiled at phase 1, which triggers compilation of the \racket{counter} module at phase 2, so that the \racket{counter} module can be instantiated at phase 1 to count how many expressions are in the \racket{while} loop.
 The phase 1 instantiation of the \racket{counter} module is separate from the phase 0 instantiation of the module.
-This is a guarantee of the Racket module system, that ``Any effects of the instantiation of the module's phase 1 due to compilation on the Racket runtime system are discarded,'' which is known as the "Separate Compilation Guarantee"~\ref{}.
+This is a guarantee of the Racket module system, that ``Any effects of the instantiation of the module's phase 1 due to compilation on the Racket runtime system are discarded,'' which is known as the "Separate Compilation Guarantee"~\cite{}.
 
 \section{Program Evaluation}
 Running a separately compiled Racket program involves following all of the \racket{require} forms and running all phase 0 code in the order they were imported.
 It is possible that phase 0 code will come through a module that is required by using \racket{for-syntax} if somewhere along the line code is then required using \racket{for-template}.
 
-% TODO: we can see huh
-By understanding how Racket programs are compiled and evaluated, we can see that only phase 0 code is necessary to run the program. 
+By understanding how Racket programs are compiled and evaluated, it is apparent that only phase 0 code is necessary to run the program. 
 This is the basis for how demodularization can recover whole programs from separately compiled Racket modules. 

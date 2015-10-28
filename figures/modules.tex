@@ -8,6 +8,6 @@
   edge [->, thick] node[auto]{\racket{require}} (obj-run)
   edge [->, thick] node[auto]{\racket{for-syntax}} (obj-comp);
 \node (while-test) [module] [below=of while-lang] {while-test}
-  edge [->, thick] node[auto]{\texttt{\#lang}} (while-lang) 
+  edge [->, thick] node[auto]{\racket{require}} (while-lang) 
   edge [->, thick, bend right] node[swap,auto]{\racket{require}} (obj-run.south);
 \end{tikzpicture}

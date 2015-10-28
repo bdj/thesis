@@ -1,4 +1,5 @@
-#lang s-exp "while-lang.rkt"
+#lang racket/base 
+(require "while-lang.rkt")
 (require "counter.rkt")
 
 (while (< (get-counter-val) 4)
