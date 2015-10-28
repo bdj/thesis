@@ -7,6 +7,7 @@ We can understand the specifics of demodularization by describing it as an algor
 The \emph{mod} language (Figure~\ref{fig:source-lang}) contains only the features necessary to write modular programs where it is possible to observe the effects of module evaluation order.
 
 \begin{figure}[h]
+\centering
 \includegraphics{figures/source}
 \caption{\emph{mod} language grammar}
 \label{fig:source-lang}
@@ -32,10 +33,14 @@ This is important for demodularization because otherwise macro expansion would h
 The grammar in Figure~\ref{fig:compiled-lang} specifies the compiled language for \emph{mod}.
 
 \begin{figure}[h]
+\centering
 \includegraphics{figures/compiled-lang}
 \caption{Compiled language grammar}
 \label{fig:compiled-lang}
 \end{figure}
+
+The grammar no longer has definitions, all variables now include module references, and code is sorted into phases.
+The actual compilation function is not relevant to demodularization.
 
 \section{Evaluation}
 
@@ -44,7 +49,7 @@ Because the reduction rules are syntactic, we extend the compiled language furth
 These extensions are in Figure~\ref{fig:compiled-eval-lang}.
 An expression of the form:
 \[
-  (\sigma\ /\ (mod\ \ldots)\ /\ ((id\ phase)\ \ldots)\ /\ ((id\ phase)\ \ldots))
+  (\sigma\ /\ program\ /\ ((id\ phase)\ \ldots)\ /\ ((id\ phase)\ \ldots))
 \]
 represents the state of the machine during evaluation.
 $\sigma$ represents the heap of the program, and when evaluation finishes represents the output of the program.

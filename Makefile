@@ -4,7 +4,7 @@ CHAPTERS=introduction.tex module-system.tex intuition.tex model.tex implementati
 
 LISTINGS=counter.rkt while-lang.rkt while-test.rkt while-expanded.rkt output.tex while-macro.rkt kernel.rkt kernel-bytecode.rkt
 
-FIGURES=modules.tex demod-redex.pdf
+FIGURES=modules.tex demod-redex.pdf source.pdf compiled-lang.pdf
 
 CHAPTERS_DIR=$(addprefix chapters/,$(CHAPTERS))
 LISTINGS_DIR=$(addprefix listings/,$(LISTINGS))
