@@ -1,0 +1,10 @@
+\begin{tikzpicture}
+\node (P) at (0,0) {$P$};
+\node [right=of P] (P') {$P'$};
+\node [below=of P] (Phat) {$\hat{P}$};
+\node [below=of P'] (P'hat) {$\hat{P'}$};
+\draw[<->] (P)--(P');
+\draw[<->] (Phat)--(P'hat);
+\draw[->]  (P)--(Phat) node [midway,left] {$n$};
+\draw[->]  (P')--(P'hat) node [midway,right] {$m$};
+\end{tikzpicture}

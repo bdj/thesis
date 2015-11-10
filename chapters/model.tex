@@ -54,63 +54,132 @@ An expression of the form:
 represents the state of the machine during evaluation.
 $\sigma$ represents the heap of the program, and when evaluation finishes represents the output of the program.
 The list of modules is the code of program in the compiled language.
-The first list of \racket{(id phase)} pairs is the list of modules to evaluate, and the second list is the modules that have already been evaluated.
+The first list of \emph{(id phase)} pairs is the list of modules to evaluate, and the second list is the modules that have already been evaluated.
 
 \begin{figure}[h]
+\centering
 \includegraphics{figures/compiled-eval-lang}
 \caption{Extensions to compiled language grammar}
 \label{fig:compiled-eval-lang}
 \end{figure}
 
-The reduction rules in Figure~\ref{fig:eval-reduction} evaluate a compiled program that starts with an empty heap, the program code, a stack that contains the identifier of the main module at phase 0, and an empty completed module list. 
+The reduction rules in Figures~\ref{fig:eval-reduction0}--\ref{fig:eval-reduction6} evaluate a compiled program that starts with an empty heap, the program code, a stack that contains the identifier of the main module at phase 0, and an empty completed module list. 
 
-% TODO: re-render without red
-% TODO: maybe needs a rewrite to capture meaning better (Jay's example)
-\begin{figure}[h]
-\includegraphics[width=\textwidth]{figures/eval-reduction}
-\caption{Modular evaluation}
-\label{fig:eval-reduction}
+% DONE: re-render without red
+% DONE: maybe needs a rewrite to capture meaning better (Jay's example)
+\begin{figure}[!h]
+  \includegraphics[width=\textwidth]{figures/eval-reduction0}
+\caption{\emph{module require} rule for modular evaluation}
+\label{fig:eval-reduction0}
 \end{figure}
-
 % TODO: explain that phases are relative
-The \emph{module require} rule matches a program with a \racket{require} expression in the module at the top of the evaluation stack and evaluates it by removing the \racket{require} expression from the module and pushing the required module onto the evaluation stack with the phase shifted appropriately.
+The \emph{module require} rule in Figure~\ref{fig:eval-reduction0} matches a program with a \racket{require} expression in the module at the top of the evaluation stack and evaluates it by removing the \racket{require} expression from the module and pushing the required module onto the evaluation stack with the phase shifted appropriately.
 The current module is still on the stack and will continue evaluating after the required module is done evaluating.
 The subsequent rules all apply only when the phase relative to the main module is zero.
-The \emph{var ref} rule looks up a variable in the heap and replaces the variable with its current value.
-The \emph{add} rule replaces an addition expression of numbers with the result of computing their sum.
-The \emph{set!} rule installs a value for a variable into the heap and reduces to the value.
-When an expression is a value, the \emph{expression done} rule matches and removes the expression from the module.
-When there are no more expressions left in a module, the \emph{module done} rule applies by removing the module from the program and placing a reference to it in the list of finished modules.
-The \emph{module done already} rule applies when the current module on the stack is in the finished list, so that modules are not evaluated multiple times. 
+
+\begin{figure}[!h]
+  \includegraphics[width=\textwidth]{figures/eval-reduction1}
+\caption{\emph{var ref} rule for modular evaluation}
+\label{fig:eval-reduction1}
+\end{figure}
+The \emph{var ref} rule in Figure~\ref{fig:eval-reduction1} looks up a variable in the heap and replaces the variable with its current value.
+The lookup function is a simple list lookup function that matches the variable name with its occurence in the heap. 
+
+\begin{figure}[!h]
+  \includegraphics[width=\textwidth]{figures/eval-reduction2}
+\caption{\emph{add} rule for modular evaluation}
+\label{fig:eval-reduction2}
+\end{figure}
+The \emph{add} rule in Figure~\ref{fig:eval-reduction2} replaces an addition expression of numbers with the result of computing their sum.
+The rule uses the standard Racket implementation of plus to compute the sum.
+
+\begin{figure}[!h]
+  \includegraphics[width=\textwidth]{figures/eval-reduction3}
+\caption{\emph{set!} rule for modular evaluation}
+\label{fig:eval-reduction3}
+\end{figure}
+The \emph{set!} rule in Figure~\ref{fig:eval-reduction3} installs a value for a variable into the heap and reduces to the value.
+The assign function either replaces the existing value for a variable in the heap or installs a new entry in the heap if it does not exist already.
+
+\begin{figure}[!h]
+  \includegraphics[width=\textwidth]{figures/eval-reduction4}
+\caption{\emph{expression done} rule for modular evaluation}
+\label{fig:eval-reduction4}
+\end{figure}
+When an expression is a value, the \emph{expression done} rule in Figure~\ref{fig:eval-reduction4} matches and removes the expression from the module.
+
+\begin{figure}[!h]
+  \includegraphics[width=\textwidth]{figures/eval-reduction5}
+\caption{\emph{module done} rule for modular evaluation}
+\label{fig:eval-reduction5}
+\end{figure}
+When there are no more expressions left in a module, the \emph{module done} rule in Figure~\ref{fig:eval-reduction5} applies by removing the module from the program and placing a reference to it in the list of finished modules.
+
+\begin{figure}[!h]
+  \includegraphics{figures/eval-reduction6}
+\caption{\emph{module done already} rule for modular evaluation}
+\label{fig:eval-reduction6}
+\end{figure}
+The \emph{module done already} rule in Figure~\ref{fig:eval-reduction6} applies when the current module on the stack is in the finished list, so that modules are not evaluated multiple times. 
 
 \section{Demodularization}
 
-Figure~\ref{fig:demod-redex} shows the demodularization algorithm for the compiled language.
-
-\begin{figure}[h]
-\includegraphics[width=\textwidth]{figures/demod-redex}
-\caption{Demodularization algorithm}
-\label{fig:demod-redex}
-\end{figure}
-
+Figures~\ref{fig:demod-redex0}--\ref{fig:demod-redex3} shows the demodularization algorithm for the compiled language.
 The algorithm takes as input an \emph{id} specifying the main module of the program, a working list of phased requires, and a list of modules that make up the program.
-The first rule applies when the main module has no requires left and there are no requires in the working list, meaning the algorithm can terminate with just the phase 0 code of the main module remaining.
 
-The second and third rules apply when the main module requires the next module in the module list.
+
+\begin{figure}[!h]
+\includegraphics[width=\textwidth]{figures/demod-redex0}
+\caption{Demodularization algorithm}
+\label{fig:demod-redex0}
+\end{figure}
+The first rule in Figure~\ref{fig:demod-redex0} applies when the main module has no requires left and there are no requires in the working list, meaning the algorithm can terminate with just the phase 0 code of the main module remaining.
+\begin{figure}[!h]
+\includegraphics[width=\textwidth]{figures/demod-redex1}
+\caption{Demodularization algorithm}
+\label{fig:demod-redex1}
+\end{figure}
+The second and third rules in Figure~\ref{fig:demod-redex1} apply when the main module requires the next module in the module list.
 Both rules add the required module's \emph{id} to the working list of required modules so that the algorithm will follow the complete require graph.
 % TODO: check to see if there is a diamond pattern, will the algorithm handle it correctly (I don't think it will right now)
 The second rule handles the case where the required module has code that will be at phase 0 for the main module and puts that code before the existing phase 0 code of the main module.
-
-The next three rules apply when handling the working list of required modules. 
+\begin{figure}[!h]
+\includegraphics[width=\textwidth]{figures/demod-redex2}
+\caption{Demodularization algorithm}
+\label{fig:demod-redex2}
+\end{figure}
+The next three rules in Figure~\ref{fig:demod-redex2} apply when handling the working list of required modules. 
 The first of the three is similar to the second rule because it extracts code that will be in phase 0 of the main module and inserts it into the main module.
 The second rule of the three working list rules handles the case where there is no matching code for phase 0.
 The third rule removes an entry from the working list when the module has no more requires.
 
-The final four rules rearrange the program's module list so that modules that require each other are adjacent in the list and the other rules can apply.
+\begin{figure}[!h]
+\includegraphics[width=\textwidth]{figures/demod-redex3}
+\caption{Demodularization algorithm}
+\label{fig:demod-redex3}
+\end{figure}
+
+The final four rules in Figure~\ref{fig:demod-redex3} rearrange the program's module list so that modules that require each other are adjacent in the list and the other rules can apply.
 
 \section{Equivalence}
-% TODO: state an actual property and give a proof sketch
 We claim that the programs will evaluate to the same answers before and after demodularization. 
-This is because the demodularization algorithm is a type of partial program evaluation, doing the same work that the evaluator does but before the program is run.
-Specifically, the demodularizer makes it so the \emph{module require} rule of the evaluator never applies because all requires have been inlined.
+
+\newtheorem*{theorem}{Theorem}
+\begin{theorem}
+Evaluating a program P a number of steps n and the demodularized program $P'$ a number of steps m will be bisimilar with respect to the stores of the programs as shown in Figure~\ref{fig:bisim.tex}.
+\end{theorem}
+
+\begin{figure}[h]
+  \centering
+  \input{figures/bisim.tex}
+  \caption{Bisimulation of a program before and after demodularization}
+  \label{fig:bisim.tex}
+\end{figure}
+
+\begin{proof}
+The proof is by induction on the DAG of required modules in a program.
+For each shape of possible requires in a program, we would show the evaluation before and after demodularization end up running the same module code in the same order and result in the same stores.
+\end{proof}
+
+The full proof of the theorem would not be instructive because of the complexities of the implementation of the model and the demodularization algorithm.
 
