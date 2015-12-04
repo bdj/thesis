@@ -4,5 +4,7 @@ In languages with syntactic extension capabilities, each module in a program can
 In Racket, the module system ensures this by separating module code into phases for runtime and compile-time and allowing phased imports and exports inside modules. 
 We present an algorithm, called demodularization, that combines all executable code from a phased modular program into a single module that can then be optimized as a whole program. 
 The demodularized programs have the same behavior as their modular counterparts but are easier to optimize. 
-We show that programs maintain their meaning through an operational semantics of the demodularization process and verify that performance increases by running the algorithm and existing optimizations on Racket programs.
+We show that programs maintain their meaning through an operational semantics of the demodularization process and verify that performance increases by comparing modular Racket programs to the equivalent demodularized and optimized programs.
+We use the existing Racket optimizer to optimize the demodularized programs by decompiling them into an intermediate form that the optimizer uses.
+We also demonstrate a dead code elimination optimization that dramatically reduces the file size of demodularized Racket programs.
 }

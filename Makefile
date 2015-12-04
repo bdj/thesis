@@ -10,7 +10,7 @@ CHAPTERS_DIR=$(addprefix chapters/,$(CHAPTERS))
 LISTINGS_DIR=$(addprefix listings/,$(LISTINGS))
 FIGURES_DIR=$(addprefix figures/, $(FIGURES))
 
-thesis.pdf: thesis.tex abstract.tex byumsphd.cls $(CHAPTERS_DIR) $(LISTINGS_DIR) $(FIGURES_DIR)
+thesis.pdf: thesis.tex abstract.tex byumsphd.cls bib.bib $(CHAPTERS_DIR) $(LISTINGS_DIR) $(FIGURES_DIR)
 	mkdir -p build
 	pdflatex -output-directory=build -shell-escape thesis
 	bibtex build/thesis

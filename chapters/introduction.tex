@@ -25,7 +25,7 @@ Languages such as C and Scheme that do not have well developed module systems ma
 Link time optimizations can be too low level to do useful optimizations.
 Linking is usually performed on already compiled modules, so any optimizations are performed on machine code and are missing source-level information.
 Inlining must be heuristic-based, and good heuristics are hard to develop. 
-Some work has been done on these heuristics for the ML programming language \cite{}.
+Some work has been done on these heuristics for the ML programming language \cite{258960}.
 
 Our solution for optimizing modular programs, called demodularization, is to transform a modular program into a non-modular program by combining all runtime code and data in the program into a single module.
 In a phased module system, finding all of the runtime values is not trivial.

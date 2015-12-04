@@ -5,9 +5,9 @@
 \section{The Racket Programming Language}
 The Racket Programming Language is a platform for creating powerful abstractions.
 These abstractions are created through the use of Racket's macro and module systems. 
-The macro system, a heritage from LISP~\cite{} and Scheme~\cite{}, allows programmers to add new features to their programs in an integrated way.
+The macro system, a heritage from LISP~\cite{LISP} and Scheme~\cite{scheme}, allows programmers to add new features to their programs in an integrated way.
 The module system allows programmers to separate their programs into logical parts and hide implementation details. 
-Together, they allow programmers to create Languages as Libraries~\cite{} that are suitable for specific tasks.
+Together, they allow programmers to create Languages as Libraries~\cite{lal} that are suitable for specific tasks.
 
 % TODO: mention that programs can extend themselves in the same file
 \section{Macros}
@@ -38,7 +38,7 @@ Listing~\ref{lst:while-expanded.rkt} shows a use of the while macro and what it 
 \end{listing}
 % DONE: example expansion
 % DONE: fuller explanation of hygeine with citation
-Racket's macros are hygenic \cite{}, which means that identifiers created from programs will not clash with identifiers created from macros. 
+Racket's macros are hygienic \cite{hygiene}, which means that identifiers created from programs will not clash with identifiers created from macros. 
 In this example that means that the Racket program using a while loop will not be able to call the \racket{while-loop} function that the macro creates, and that if the program has another definition for \racket{while-loop}, it will be independent from the definition introduced by the macro.
 Also, each use of the macro will have distinct definitions for \racket{while-loop} so that the macro can be nested and used multiple times.
 \section{Modules}
@@ -76,7 +76,7 @@ Now this module can be used to extend the language of other programs by adding a
 % TODO: Rewrite this section, it sucks
 The ability to use modules as languages allows programmers to write specialized domain-specific languages (DSLs) to better express solutions to domain problems. 
 % TODO: akward sentence
-Using this ability, programmers have added languages for Typed Racket~\cite{}, Object-Oriented Racket~\cite{}, Logic Programming~\cite{}, and more~\cite{}.
+Using this ability, programmers have added languages for Typed Racket~\cite{typed}, Object-Oriented Racket~\cite{oo}, Logic Programming~\cite{logic}, and more.
 Also, because they are modules, it is possible to use them all in the same program and use the right language for each specific problem.
 The language creating facilities of Racket extend to more than just collections of functions and macros; they also allow changing the parser and changing the meaning of things like function application syntax. 
 
@@ -107,7 +107,7 @@ It is possible for modules to reference modules at higher phases by using the \r
 
 In the example above, the \racket{while-test} module is compiled at phase 1, which triggers compilation of the \racket{counter} module at phase 2, so that the \racket{counter} module can be instantiated at phase 1 to count how many expressions are in the \racket{while} loop.
 The phase 1 instantiation of the \racket{counter} module is separate from the phase 0 instantiation of the module.
-This is a guarantee of the Racket module system, that ``Any effects of the instantiation of the module's phase 1 due to compilation on the Racket runtime system are discarded,'' which is known as the "Separate Compilation Guarantee"~\cite{}.
+This is a guarantee of the Racket module system, that ``Any effects of the instantiation of the module's phase 1 due to compilation on the Racket runtime system are discarded,'' which is known as the "Separate Compilation Guarantee"~\cite{sep}.
 
 \section{Program Evaluation}
 Running a separately compiled Racket program involves following all of the \racket{require} forms and running all phase 0 code in the order they were imported.

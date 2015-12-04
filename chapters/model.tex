@@ -65,62 +65,60 @@ The first list of \emph{(id phase)} pairs is the list of modules to evaluate, an
 
 The reduction rules in Figures~\ref{fig:eval-reduction0}--\ref{fig:eval-reduction6} evaluate a compiled program that starts with an empty heap, the program code, a stack that contains the identifier of the main module at phase 0, and an empty completed module list. 
 
-% DONE: re-render without red
-% DONE: maybe needs a rewrite to capture meaning better (Jay's example)
-\begin{figure}[!h]
-  \includegraphics[width=\textwidth]{figures/eval-reduction0}
-\caption{\emph{module require} rule for modular evaluation}
-\label{fig:eval-reduction0}
-\end{figure}
+\begin{equation}
+  \includegraphics[width=0.9\textwidth]{figures/eval-reduction0}
+  \label{eq:module-require}
+\end{equation}
+
 % TODO: explain that phases are relative
-The \emph{module require} rule in Figure~\ref{fig:eval-reduction0} matches a program with a \racket{require} expression in the module at the top of the evaluation stack and evaluates it by removing the \racket{require} expression from the module and pushing the required module onto the evaluation stack with the phase shifted appropriately.
+The \emph{module require} rule in Equation~\ref{eq:module-require} matches a program with a \racket{require} expression in the module at the top of the evaluation stack and evaluates it by removing the \racket{require} expression from the module and pushing the required module onto the evaluation stack with the phase shifted appropriately.
 The current module is still on the stack and will continue evaluating after the required module is done evaluating.
 The subsequent rules all apply only when the phase relative to the main module is zero.
 
-\begin{figure}[!h]
-  \includegraphics[width=\textwidth]{figures/eval-reduction1}
-\caption{\emph{var ref} rule for modular evaluation}
-\label{fig:eval-reduction1}
-\end{figure}
-The \emph{var ref} rule in Figure~\ref{fig:eval-reduction1} looks up a variable in the heap and replaces the variable with its current value.
+\begin{equation}
+  \includegraphics[width=0.9\textwidth]{figures/eval-reduction1}
+  \label{eq:var-ref}
+\end{equation}
+
+The \emph{var ref} rule in Equation~\ref{eq:var-ref} looks up a variable in the heap and replaces the variable with its current value.
 The lookup function is a simple list lookup function that matches the variable name with its occurence in the heap. 
 
-\begin{figure}[!h]
-  \includegraphics[width=\textwidth]{figures/eval-reduction2}
-\caption{\emph{add} rule for modular evaluation}
-\label{fig:eval-reduction2}
-\end{figure}
-The \emph{add} rule in Figure~\ref{fig:eval-reduction2} replaces an addition expression of numbers with the result of computing their sum.
+\begin{equation}
+  \includegraphics[width=0.9\textwidth]{figures/eval-reduction2}
+  \label{eq:add}
+\end{equation}
+
+The \emph{add} rule in Equation~\ref{eq:add} replaces an addition expression of numbers with the result of computing their sum.
 The rule uses the standard Racket implementation of plus to compute the sum.
 
-\begin{figure}[!h]
-  \includegraphics[width=\textwidth]{figures/eval-reduction3}
-\caption{\emph{set!} rule for modular evaluation}
-\label{fig:eval-reduction3}
-\end{figure}
-The \emph{set!} rule in Figure~\ref{fig:eval-reduction3} installs a value for a variable into the heap and reduces to the value.
+\begin{equation}
+  \includegraphics[width=0.9\textwidth]{figures/eval-reduction3}
+  \label{eq:set}
+\end{equation}
+
+The \emph{set!} rule in Equation~\ref{eq:set} installs a value for a variable into the heap and reduces to the value.
 The assign function either replaces the existing value for a variable in the heap or installs a new entry in the heap if it does not exist already.
 
-\begin{figure}[!h]
-  \includegraphics[width=\textwidth]{figures/eval-reduction4}
-\caption{\emph{expression done} rule for modular evaluation}
-\label{fig:eval-reduction4}
-\end{figure}
-When an expression is a value, the \emph{expression done} rule in Figure~\ref{fig:eval-reduction4} matches and removes the expression from the module.
+\begin{equation}
+  \includegraphics[width=0.9\textwidth]{figures/eval-reduction4}
+  \label{eq:expression-done}
+\end{equation}
 
-\begin{figure}[!h]
-  \includegraphics[width=\textwidth]{figures/eval-reduction5}
-\caption{\emph{module done} rule for modular evaluation}
-\label{fig:eval-reduction5}
-\end{figure}
-When there are no more expressions left in a module, the \emph{module done} rule in Figure~\ref{fig:eval-reduction5} applies by removing the module from the program and placing a reference to it in the list of finished modules.
+When an expression is a value, the \emph{expression done} rule in Equation~\ref{eq:expression-done} matches and removes the expression from the module.
 
-\begin{figure}[!h]
+\begin{equation}
+  \includegraphics[width=0.9\textwidth]{figures/eval-reduction5}
+  \label{eq:module-done}
+\end{equation}
+
+When there are no more expressions left in a module, the \emph{module done} rule in Equation~\ref{eq:module-done} applies by removing the module from the program and placing a reference to it in the list of finished modules.
+
+\begin{equation}
   \includegraphics{figures/eval-reduction6}
-\caption{\emph{module done already} rule for modular evaluation}
-\label{fig:eval-reduction6}
-\end{figure}
-The \emph{module done already} rule in Figure~\ref{fig:eval-reduction6} applies when the current module on the stack is in the finished list, so that modules are not evaluated multiple times. 
+  \label{eq:module-done-already}
+\end{equation}
+
+The \emph{module done already} rule in Equation~\ref{eq:module-done-already} applies when the current module on the stack is in the finished list, so that modules are not evaluated multiple times. 
 
 \section{Demodularization}
 
@@ -175,6 +173,8 @@ Evaluating a program P a number of steps n and the demodularized program $P'$ a 
   \caption{Bisimulation of a program before and after demodularization}
   \label{fig:bisim.tex}
 \end{figure}
+
+% Properties: grab all code should grab, never grab extra code, renaming doesn't clash
 
 \begin{proof}
 The proof is by induction on the DAG of required modules in a program.

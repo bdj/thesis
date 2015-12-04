@@ -1,6 +1,7 @@
 \chapter{Implementation}
 \label{chap:implementation}
-
+% Why is it this way
+% explain Racket framework for compile/optimize
 The implementation of demodularization for the Racket module system is included in the Racket distribution as part of the build tool \racket{raco}. 
 Users can pass in a module they would like to demodularize and optmize to the tool and it will compile all the necessary modules, run the demodularization algorithm on them, decompile the resulting module, and run optimizations on it to produce the final module.
 The demodularization algorithm runs on compiled modules, which are stored in Racket bytecode files.
