@@ -70,7 +70,7 @@ For example, if a programmer wanted to change the \racket{while} macro so that i
 \end{listing}
 It is possible to add code to the \racket{while} macro because it is just a function from syntax to syntax that runs at compile-time. 
 Also, the \racket{require} form includes a \racket{for-syntax} form to indicate that the \texttt{counter} module is needed at compile-time (along with the \racket{racket/base} module for \racket{printf}).
-Now this module can be used to extend the language of other programs by adding a \racket{while} loop, but it is just a library that is included like any other library.
+Now this module can be used to extend the language of other programs by adding a \racket{while} loop, although it is just a library that is included like any other library.
 
 \section{Languages}
 % TODO: Rewrite this section, it sucks
@@ -101,16 +101,19 @@ The way the Racket module system allows for reliable separate compiliation is by
 Phase 0 is the execution phase of the main module of a program, what could be considered running the program.
 Phase 1 is the compilation phase of the main module, which could include execution of code inside macros. 
 Phase 2 is the compiliation phase of any modules that need to execute during phase 1, and higher phases are used as needed to compile and run code used in lower phases.
+It is possible for a single module to be used in multiple phases.
+Each phase will have a separate instantiation of the module.
 % TODO: awkward sentence
 % TODO: maybe explain for-template better (first time introduced)
 It is possible for modules to reference modules at higher phases by using the \racket{for-syntax} form as seen above, and it is also possible to reference modules at lower phases by using the \racket{for-template} form.
+The \racket{for-template} form is used when a programmer wants to include code from an imported module in the output of a macro.
 
 In the example above, the \racket{while-test} module is compiled at phase 1, which triggers compilation of the \racket{counter} module at phase 2, so that the \racket{counter} module can be instantiated at phase 1 to count how many expressions are in the \racket{while} loop.
 The phase 1 instantiation of the \racket{counter} module is separate from the phase 0 instantiation of the module.
-This is a guarantee of the Racket module system, that ``Any effects of the instantiation of the module's phase 1 due to compilation on the Racket runtime system are discarded,'' which is known as the "Separate Compilation Guarantee"~\cite{sep}.
+The separate compilation guarantee of the Racket module system is that ``Any effects of the instantiation of the module's phase 1 due to compilation on the Racket runtime system are discarded'' \cite{sep}. 
 
 \section{Program Evaluation}
-Running a separately compiled Racket program involves following all of the \racket{require} forms and running all phase 0 code in the order they were imported.
+Running a separately compiled Racket program involves following all of the \racket{require} forms and running all phase 0 code in the order in which the code is imported.
 It is possible that phase 0 code will come through a module that is required by using \racket{for-syntax} if somewhere along the line code is then required using \racket{for-template}.
 
 By understanding how Racket programs are compiled and evaluated, it is apparent that only phase 0 code is necessary to run the program. 

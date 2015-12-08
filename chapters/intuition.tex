@@ -12,7 +12,7 @@ Listing~\ref{lst:main.rkt} shows an example of using such a library.
   \caption{\texttt{main.rkt} module with queue usage}
   \label{lst:main.rkt}
 \end{listing}
-The library is implemented as a macro, show in Listing~\ref{lst:queue.rkt}, that switches between two implementatations depending on the length of the initial queue.
+The library is implemented as a macro, shown in Listing~\ref{lst:queue.rkt}, that switches between two implementatations depending on the length of the initial queue.
 \begin{listing}
   \inputminted{racket}{listings/queue.rkt}
   \caption{\texttt{queue.rkt} module}
@@ -20,7 +20,7 @@ The library is implemented as a macro, show in Listing~\ref{lst:queue.rkt}, that
 \end{listing}
 Listing~\ref{lst:long-queue.rkt} and Listing~\ref{lst:short-queue.rkt} show the two queue implementations, with the \texttt{long-queue} using vectors and the \texttt{short-queue} using lists. 
 % DONE: say that ... is actual racket syntax
-The \racket{....} signifies elided code (but \racket{...} has meaning in Racket).
+The \racket{...} notation has meaning in Racket, so \racket{....} is used to indicate elided code.
 
 \begin{listing}
   \inputminted{racket}{listings/long-queue.rkt}
@@ -45,15 +45,15 @@ Compiling this program involves expanding the \racket{with-queue} macro, which w
   \label{lst:main-expanded.rkt}
 \end{listing}
 
-The expanded program contains references to \racket{long-queue} operations because the length of the initial queue was over 5.
-While the expanded program is not the same as a fully compiled program, it can stand in for one with regard to optimization and demodularization.
+The expanded program contains references to \racket{long-queue} operations because the length of the initial queue is over 5.
+Although the expanded program is not fully compiled to bytecode, it can stand in for a fully compiled program with regard to optimization and demodularization.
 
 With the expanded program, it is possible to see how cross-module optimizations would be difficult.
 The program has calls to functions in the \racket{long-queue} module, so the optimizer does not have access to the definitions of the functions while finishing the compilation of the main module.
 
 \section{Demodularization}
 
-Demodularization of the program proceeds by following the \racket{require} graph and including phase 0 code. 
+Demodularization of the program proceeds by following the \racket{require} graph and including all phase 0 code from the required modules into the main module of the program. 
 The \racket{main} module requires the \racket{queue} module, but the \racket{queue} module only has phase 1 code, so it is not included in the final module.
 The \racket{queue} module requires the \racket{long-queue} and \racket{short-queue} modules, which have various phase 0 definitions that get included in the order they appear in their original modules.
 Listing~\ref{lst:main-demodularized.rkt} shows what the demodularized example program would look like.
@@ -82,6 +82,6 @@ Listing~\ref{lst:main-optimized.rkt} shows what the example program would look l
 \end{listing}
 
 % DONE: point out that the dead code is eliminated
-The optimizer is able to inline the various functions because it has access to all of the definitions within the module.
+The existing optimizer is able to inline the various functions because it has access to all of the definitions within the module.
 The optimizer also removes the extra queue implementation because it is dead code.
 Therefore, demodularization enables optimization by providing the optimizer access to the whole program in one place.

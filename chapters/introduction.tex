@@ -8,7 +8,7 @@ Many languages provide features for creating modular programs which enable separ
 Some languages provide expressive macro systems, which enable programmers to extend the compiler in arbitrary ways.
 Combining module systems with expressive macro systems allow programmers to write modular programs with each module written in its own domain-specific language.
 A compiler for such a language must ensure that modular programs have the same meaning independent of the order in which the modules are compiled.
-A phased module system, like the one described by Flatt \cite{Flatt} for Racket, is a way to allow both separately compiled modules and expressive macros in a language.
+A phased module system, like the one described by Flatt for Racket \cite{Flatt}, is a way to allow both separately compiled modules and expressive macros in a language.
 
 Modular programs are difficult to optimize because the compiler has little to no information about values that come from other modules when compiling a single module.
 Existing optimizations have even less information when modules can extend the compiler. 
@@ -38,7 +38,7 @@ Also, demodularization enables new optimizations that need whole program informa
 Demodularizing programs in a language with an expressive macro system is feasible and useful.
 
 We explain the Racket module system in Chapter~\ref{chap:module-system}. In Chapter~\ref{chap:intuition}, we explain demodularization at a high level with a detailed example.
-Next, we use the operational semantics model of the demodularization process to explain why demodularization is correct (Chapter~\ref{chap:model}), then describe an actual implementation for Racket (Chapter~\ref{chap:implementation}), followed by experimental results of demodularizing and optimizing real-world Racket programs (Chapter~\ref{chap:evaluation}). 
+Next, we use the operational semantics model of the demodularization process to explain why demodularization is correct (Chapter~\ref{chap:model}), and we then describe an actual implementation for Racket (Chapter~\ref{chap:implementation}), followed by experimental results of demodularizing and optimizing real-world Racket programs (Chapter~\ref{chap:evaluation}). 
 The operational semantics model removes the unnecessary details of the full implementation so the demodularization process is easier to understand and verify. 
 The actual implementation presents interesting difficulties that the model does not.
 The experimental results show that demodularization improves performance, especially when a program is highly modular. 
