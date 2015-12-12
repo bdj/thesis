@@ -1,15 +1,32 @@
 \chapter{Implementation}
 \label{chap:implementation}
-% Why is it this way
-% explain Racket framework for compile/optimize
-The implementation of demodularization for the Racket module system is included in the Racket distribution as part of the build tool \racket{raco}. 
-Users can pass in a module they would like to demodularize and optmize to the tool and it will compile all the necessary modules, run the demodularization algorithm on them, decompile the resulting module, and run optimizations on it to produce the final module.
-The demodularization algorithm runs on compiled modules, which are stored in Racket bytecode files.
+
+The implementation of demodularization for the Racket module system integrates with the existing compilation process. 
+The goal of the implementation was to write the actual algorithm in Racket, but to use as much of the existing infrastructure as possible. 
+We did not want to duplicate work done by the compiler, so the demodularization algorithm operates on Racket bytecode. 
+We also did not want to duplicate work done by the optimizer, so we pass the demodularized program through the existing optimizer.
+All of the pieces of the demodularization process are contained within a command line tool. 
+
+\section{Racket Compilation Process}
+
+Figure~\ref{fig:compilation} shows the compilation process that a Racket module undergoes and the various intermediate forms the code takes.
+\begin{figure}
+  \input{figures/compilation}
+  \label{fig:compilation}
+  \caption{Racket compilation process}
+\end{figure}
+In principle it would be possible to write the demodularization algorithm for modules at any point in this process, but we chose to write it at the bytecode level because it is a well defined file type and phases are clearly deliniated.
+
+The compilation process for Racket is all written in C.
+The first step of compiling a Racket module is to expand all of the macros it uses into what is known as the Racket kernel language or fully expanded code.
+The next step is compilation to an Intermediate Representation (IR) made up of C data structures.
+The optimizer works on this IR to produce an optmized version of it.
+Then, the compiler finishes turning the IR into bytecode.
 
 \section{Racket bytecode}
 Racket bytecode is different from most other forms of bytecode in that it mostly maintains the structure of the abstract syntax tree from the original program.
 The main aspect that changes between fully-expanded Racket programs and Racket bytecode is the use of stack positions instead of variables and the addition of stack-manipulating instructions.
-A full explanation of Racket bytecode and what it means can be found in \ref{}.
+A full explanation of Racket bytecode and what it means can be found in \cite{bytecode}.
 
 % DONE: Don't start a paragraph with Also
 A table is created in the bytecode for the top level bindings in a module, which is known as the prefix.
@@ -36,7 +53,13 @@ The references to \racket{random} and \racket{+} are replaced with references to
 \section{Demodularization}
 
 The implementation of demodularization for the Racket module system is written in Racket and consumes and produces Racket bytecode.
+Figure~\ref{fig:demod} shows the demodularization process and how it interacts with existing racket components.
 The library for reading and writing Racket bytecode in Racket was mainly used for debugging purposes and was incomplete, so the first task was to fully implement the Racket bytecode library.
+\begin{figure}
+  \input{figures/demod}
+  \label{fig:demod}
+  \caption{Demodularization process}
+\end{figure}
 
 The actual algorithm for demodularization is similar to the model in the previous chapter in that it traces requires and includes all phase 0 code in the final module, but it also has to deal with the module prefix and references to the prefix.
 When the algorithm includes a required module, it also includes that module's prefix appended to the end of the main module's prefix. 
@@ -59,7 +82,7 @@ Therefore, to use the existing optimizer, Racket bytecode needed to be decompile
 The decompiler was written in C, so that it could interoperate with the optimizer.
 There are three main differences between Racket bytecode and the intermediate form: stack positions, cyclic closures, and reference arguments.
 In Racket bytecode and in the intermediate form, all references to bindings are numeric, but in bytecode the references are stack positions and in the intermediate form the references are lexical.
-For example, the bytecode in Listing~\ref{lst:kernel-bytecode} has three references to \racket{x}, in the form of \racket{(install-value 0 5)}, \racket{(local 1)}, and \racket{(local 3)}. 
+For example, the bytecode in Listing~\ref{lst:kernel-bytecode.rkt} has three references to \racket{x}, in the form of \racket{(install-value 0 5)}, \racket{(local 1)}, and \racket{(local 3)}. 
 % DONE: explain why they should all be 0
 In the intermediate form, all of these references to \racket{x} should be \racket{0} because lexically they all refer to the same variable that is the closest binding.
 
@@ -85,4 +108,12 @@ If the modules loaded through \racket{dynamic-require} were completely separate 
 The restriction of not allowing \racket{dynamic-require} means that programs that need to load modules on the fly, such as REPLs, sandboxed evaluation environments, and scripting environments cannot be demodularized.
 This is okay because it is unclear what whole program compilation means for such programs.
 
-% DONE: in practice what does this mean
+\section{Usage}
+The implementation of demodularization is included in the Racket distribution as part of the build tool \racket{raco}. 
+Users can pass in a module they would like to demodularize and optmize to the tool and it will compile all the necessary modules, run the demodularization algorithm on them, decompile the resulting module, and run optimizations on it to produce the final module.
+For example, to demodularize a program whose main module was \texttt{while-test.rkt}, a user would type the following command: 
+
+\begin{verbatim}
+raco demod -O while-test.rkt
+\end{verbatim}
+

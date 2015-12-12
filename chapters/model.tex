@@ -78,7 +78,7 @@ Evaluation proceeds by adding required modules to the evaluation stack and execu
 
 % TODO: explain that phases are relative
 The rule in Equation~\ref{eq:module-require} matches a program with a \texttt{require} expression in the module at the top of the evaluation stack and evaluates it by removing the \texttt{require} expression from the module and pushing the required module onto the evaluation stack with the phase shifted by the difference between the current module's relative phase and the required phase.
-The \ominus is not part of the language and represents the prefix version of the math function minus.
+The $\ominus$ is not part of the language and represents the prefix version of the math function minus.
 The current module is still on the stack and will continue evaluating after the required module is done evaluating.
 The subsequent rules all apply only when the phase relative to the main module is zero.
 
@@ -96,7 +96,7 @@ The lookup function is a simple list lookup function that matches the variable n
 \end{equation}
 
 The rule in Equation~\ref{eq:add} replaces an addition expression of numbers with the result of computing their sum.
-The \oplus represents the prefix version of the math function plus.
+The $\oplus$ represents the prefix version of the math function plus.
 
 \begin{equation}
   \includegraphics[width=0.9\textwidth]{figures/eval-reduction3}
@@ -187,9 +187,9 @@ Evaluating a program P a number of steps n and the demodularized program $P'$ a 
 
 % Properties: grab all code should grab, never grab extra code, renaming doesn't clash
 
-\begin{proof}
+\begin{proof}[Proof Sketch]
 The proof is by induction on the DAG of required modules in a program.
-For each shape of possible requires in a program, we would show the evaluation before and after demodularization end up running the same module code in the same order and result in the same stores.
+For each shape of possible requires in a program, we would show the evaluation before and after demodularization run the same module code in the same order and result in the same stores.
 \end{proof}
 
 The full proof of the theorem would not be instructive because of the complexities of the implementation of the model and the demodularization algorithm.

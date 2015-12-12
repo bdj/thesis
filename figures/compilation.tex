@@ -1,0 +1,13 @@
+\begin{tikzpicture}[rep/.style={draw, text width=6cm, align=center}]
+  \node (racket) [rep] {Racket code (.rkt)};
+  \node (expanded) [rep, below=of racket] {Fully expanded code};
+  \node (IR) [rep, below=of expanded] {Intermediate Representation};
+  \node (OIR) [rep, below=of IR] {Optimized IR};
+  \node (zo) [rep, below=of OIR] {Racket bytecode (.zo)};
+
+  \draw[->] (racket)--(expanded) node [midway, right] {macro expander};
+  \draw[->] (expanded)--(IR) node [midway, right] {compiler};
+  \draw[->] (IR)--(OIR) node [midway, right] {optimizer};
+  \draw[->] (OIR)--(zo) node [midway, right] {compiler};
+
+\end{tikzpicture}

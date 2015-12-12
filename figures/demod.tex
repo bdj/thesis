@@ -1,0 +1,14 @@
+\begin{tikzpicture}[rep/.style={draw, text width=6cm, align=center}]
+  \node (modules) [rep] {Bytecode modules (.zo)};
+  \node (racket) [rep, below=of modules] {Modules in Racket};
+  \node (demod) [rep, below=of racket] {Single module in Racket};
+  \node (demod-zo) [rep, below=of demod] {Single bytecode module (.zo)};
+  \node (IR) [rep, below=of demod-zo] {Single module in IR};
+  \node (opt-zo) [rep, below=of IR] {Optimized bytecode module (.zo)};
+
+  \draw[->] (modules)--(racket) node [midway, right] {bytecode reader};
+  \draw[->] (racket)--(demod) node [midway, right] {demodularizer};
+  \draw[->] (demod)--(demod-zo) node [midway, right] {bytecode writer};
+  \draw[->] (demod-zo)--(IR) node [midway, right] {decompiler};
+  \draw[->] (IR)--(opt-zo) node [midway, right] {optimizer, compiler};
+\end{tikzpicture}
