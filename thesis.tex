@@ -11,6 +11,7 @@
 \usetikzlibrary{positioning}
 \usepackage{amsthm}
 \usepackage{url}
+\usepackage[toc]{appendix}
 
 \newcommand{\racket}[1]{\mintinline{racket}{#1}}
 % TODO: use natbib maybe?
@@ -51,5 +52,9 @@
 
 \bibliographystyle{plain}
 \bibliography{bib}
+
+\begin{appendices}
+  \input{chapters/benchmarks}
+\end{appendices}
 
 \end{document}

@@ -6,9 +6,5 @@ A programmer can write a modular program and get the benefits of separate compil
 Demodularization also enables new optimizations that are not feasible to implement for modular programs.
 Without module boundaries, inter-procedural analysis is much easier and worthwhile.
 Also, dead code elmination works much better because the whole program is visible, while in a modular program, only dead code that is private to the module can be eliminated.
-
-In the future, we would like to implement an aggressive dead code elimination algorithm for Racket.
-% TODO: what does it mean to ignore side effects, why does it matter?
-We implemented a naive one that does not respect side effects, but shows the potential gains from this optimization; it is able to shrink Racket binaries down from about 2MB to about 100KB\@.
-This promising result implies that other low-hanging optimizations should be possible on demodularized programs that can increase performance.
+We would like to see implementations of Control-Flow Analysis for Racket programs now that whole programs are accessible through demodularization.
 
