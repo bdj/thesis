@@ -309,7 +309,7 @@
 %
 % If we are showing a list of listings, then we need to include the listings package
 \if@needlistings
-\RequirePackage[outputdir=build]{minted}%
+\RequirePackage[outputdir=build,chapter]{minted}%
 \fi
 %
 % If we are showing layout grids, then we include the appropriate package and

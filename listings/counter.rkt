@@ -3,4 +3,4 @@
 
 (define x 0)
 (define (get-counter-val) x)
-(define (count-up . v) (set! x (add1 x)))
+(define (count-up) (set! x (add1 x)))

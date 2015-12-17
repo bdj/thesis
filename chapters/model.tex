@@ -46,18 +46,39 @@ The grammar in Figure~\ref{fig:compiled-lang} specifies the compiled language fo
 
 The grammar no longer has definitions, all variables now include module references, and code is sorted into phases.
 The actual compilation function is not relevant to demodularization.
+As an example of the compilation process, consider Listing~\ref{lst:exp-example}.
+It shows a program in the \emph{mod} language.
+Listing~\ref{lst:comp-example} shows what this program would look like after compilation.
+The code no longer contains definitions, and all code has been sorted into the appropriate phases.
+\begin{listing}
+  \begin{minted}{racket}
+    ((module foo ((require bar @ 1)) ((define x @ 1 as (+ y 8))) ((set! x 3)))
+     (module bar () ((define x @ -1 as 9) (define y @ 0 as 4)) ()))
+  \end{minted}
+  \label{lst:exp-example}
+  \caption{Example program in the \emph{mod} language}
+\end{listing}
+
+\begin{listing}
+  \begin{minted}{racket}
+    ((module foo ((require bar @ 1)) ((0 ((set! (bar x) 3))) (1 ((set! (foo x) (+ (bar y) 8))))))
+     (module bar () ((-1 ((set! (bar x) 9))) (0 ((set! (bar y) 4))))))
+  \end{minted}
+  \label{lst:comp-example}
+  \caption{Compiled version of example program}
+\end{listing}
 
 \section{Evaluation}
 
 We evaluate the compiled language using a small-step reduction semantics. 
-Because the reduction rules are syntactic, we extend the compiled language further with evaluation contexts, a heap representation, and a stack representation to keep track of the order to instantiate modules.
+Because the reduction rules are syntactic, we extend the compiled language further with evaluation contexts, a heap representation, and a stack representation to keep track of the order in which to instantiate modules.
 These extensions are in Figure~\ref{fig:compiled-eval-lang}.
 An expression of the form:
 \[
   (\sigma\ /\ (program\ /\ ((id\ phase)\ \ldots)\ /\ ((id\ phase)\ \ldots)))
 \]
 represents the state of the machine during evaluation.
-$\sigma$ represents the heap of the program, and when evaluation finishes represents the output of the program.
+$\sigma$ represents the heap of the program, and, when evaluation finishes, $\sigma$ represents the output of the program.
 The list of modules is the code of program in the compiled language.
 The first list of \emph{(id phase)} pairs is the list of modules to evaluate, and the second list is the modules that have already been evaluated.
 
@@ -192,5 +213,5 @@ The proof is by induction on the DAG of required modules in a program.
 For each shape of possible requires in a program, we would show the evaluation before and after demodularization run the same module code in the same order and result in the same stores.
 \end{proof}
 
-The full proof of the theorem would not be instructive because of the complexities of the implementation of the model and the demodularization algorithm.
+The full proof of the theorem would be irrelevant to the implementation because graph traversal is not the difficult part of the demodularization algorithm, instead it is the complexities of the bytecode representation which are not modeled in the \emph{mod} language.
 

@@ -35,7 +35,10 @@ A demodularized program does not need to include modules that are only needed du
 A program with a single module is effectively a non-modular program. 
 After demodularization, a program becomes a single module, so existing optimizers have more information. 
 Also, demodularization enables new optimizations that need whole program information. 
+
 Demodularizing programs in a language with an expressive macro system is feasible and useful.
+We show that it is feasible by implementing demodularization for the Racket programming language.
+We show that it is useful by showing that it maintains program meaning and that it improves performance and program size.
 
 We explain the Racket module system in Chapter~\ref{chap:module-system}. In Chapter~\ref{chap:intuition}, we explain demodularization at a high level with a detailed example.
 Next, we use the operational semantics model of the demodularization process to explain why demodularization is correct (Chapter~\ref{chap:model}), and we then describe an actual implementation for Racket (Chapter~\ref{chap:implementation}), followed by experimental results of demodularizing and optimizing real-world Racket programs (Chapter~\ref{chap:evaluation}). 

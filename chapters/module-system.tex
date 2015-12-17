@@ -12,6 +12,7 @@ Together, they allow programmers to create Languages as Libraries~\cite{lal} tha
 % TODO: mention that programs can extend themselves in the same file
 \section{Macros}
 Macros are the main way programmers add new features to Racket. 
+Macros are written alongside normal functions in a program, but they are used during the compilation of the program. 
 Esentially, macros are functions (known as transformers) whose domain and range are syntax objects.
 Syntax objects are data structures that contain the raw syntax of a program, along with lexical information and other properties associated with the syntax.
 If a programmer needs the power, they can write transformers using all of the features of Racket, as long as the function takes in and produces syntax objects.
@@ -29,7 +30,7 @@ The helper function, \racket{syntax-case} matches syntax patterns so that it is 
 \end{listing}
 Listing~\ref{lst:while-macro.rkt} shows how to use one of these macros to write a \racket{while} loop. 
 The macro turns a \racket{while} loop into a recursive function and a call to that recursive function.
-Whatever syntax used by the programmer for the \racket{test} and \racket{body ...} forms will be substituted into the output of the macro. 
+Whatever syntax used by the programmer for the \racket{test} and \racket{body ...} forms will be substituted by \racket{syntax-case} into the output of the macro. 
 Listing~\ref{lst:while-expanded.rkt} shows a use of the while macro and what it expands into after running the macro. 
 \begin{listing}
   \inputminted{racket}{listings/while-expanded.rkt}
@@ -39,11 +40,12 @@ Listing~\ref{lst:while-expanded.rkt} shows a use of the while macro and what it 
 % DONE: example expansion
 % DONE: fuller explanation of hygeine with citation
 Racket's macros are hygienic \cite{hygiene}, which means that identifiers created from programs will not clash with identifiers created from macros. 
+This means that macros are protected from the surrounding program changing their identifiers, and also that the program is protected from the macro changing its identifiers.
 In this example that means that the Racket program using a while loop will not be able to call the \racket{while-loop} function that the macro creates, and that if the program has another definition for \racket{while-loop}, it will be independent from the definition introduced by the macro.
 Also, each use of the macro will have distinct definitions for \racket{while-loop} so that the macro can be nested and used multiple times.
 \section{Modules}
 % TODO: all listings are modules in separate files
-Racket modules are a way of grouping definitions, expressions, and macros into groups. 
+Racket modules are a way of grouping definitions, expressions, and macros. 
 Modules also allow control over imports and exports, using the Racket forms \racket{require} and \racket{provide} respectively.
 Listing~\ref{lst:counter.rkt} shows a simple Racket module and some of the features of the Racket module system.
 \begin{listing}

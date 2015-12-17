@@ -106,7 +106,7 @@ Because the demodularizer cannot know ahead of time what modules might be loaded
 If the modules loaded through \racket{dynamic-require} were completely separate (meaning they do not share any required modules) from the main program, it would be possible to demodularize the program, but in practice most modules required at runtime will share with the main program.
 
 The restriction of not allowing \racket{dynamic-require} means that programs that need to load modules on the fly, such as REPLs, sandboxed evaluation environments, and scripting environments cannot be demodularized.
-This is okay because it is unclear what whole program compilation means for such programs.
+This is okay because such programs are fundamentally incomplete programs whose full meaning isn't known until runtime.
 
 \section{Usage}
 The implementation of demodularization is included in the Racket distribution as part of the build tool \racket{raco}. 
