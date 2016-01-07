@@ -26,7 +26,7 @@ Then, the compiler finishes turning the IR into bytecode.
 \section{Racket bytecode}
 Racket bytecode is different from most other forms of bytecode in that it mostly maintains the structure of the abstract syntax tree from the original program.
 The main aspect that changes between fully-expanded Racket programs and Racket bytecode is the use of stack positions instead of variables and the addition of stack-manipulating instructions.
-A full explanation of Racket bytecode and what it means can be found in \cite{bytecode}.
+A full explanation of Racket bytecode and what it means can be found in "The Racket virtual machine and randomized testing" \cite{bytecode}.
 
 % DONE: Don't start a paragraph with Also
 A table is created in the bytecode for the top level bindings in a module, which is known as the prefix.
@@ -53,7 +53,7 @@ The references to \racket{random} and \racket{+} are replaced with references to
 \section{Demodularization}
 
 The implementation of demodularization for the Racket module system is written in Racket and consumes and produces Racket bytecode.
-Figure~\ref{fig:demod} shows the demodularization process and how it interacts with existing racket components.
+Figure~\ref{fig:demod} shows the demodularization process and how it interacts with existing Racket components.
 The library for reading and writing Racket bytecode in Racket was mainly used for debugging purposes and was incomplete, so the first task was to fully implement the Racket bytecode library.
 \begin{figure}
   \input{figures/demod}

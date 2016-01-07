@@ -20,7 +20,8 @@
 (point-size 2)
 (plot-file (list
        (lines non-inlined
-              #:label "Non-inlined")
+              #:label "Non-inlined"
+              #:style 'long-dash)
        (points non-inlined)
        (lines inlined
               #:label "Inlined")
