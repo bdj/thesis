@@ -13,58 +13,61 @@ The compiler does not have much information about functionality from other modul
 A separately compiled program is turned into an executable through linking all of the modules together, which can happen either statically or dynamically.
 Static linking creates a full executable program by combining all of the modules of the program before running the program.
 Dynamic linking creates references to other modules in the program and loads them as needed when the program runs.
+Linking is just one step in the process of taking a program from source code to running code, and programming languages oten have more steps that happen in that transformation process.
 
-Some programming languages provide macro systems, which enable programmers to add features to the programming language through manipulation of the syntax of the program.
-Simple macro systems allow textual replacement, while more advanced systems provide access to the syntax as objects with rich lexical information and a full programming language to manipulate the syntax.
-Advanced macro systems allow programmers to write macros in the same programming language they use to write their programs. 
+Some programming languages provide macro systems, which run before compiling, that enable programmers to add features to the programming language through manipulation of the syntax of the program.
+Simple macro systems allow textual replacement, like the preprocessor in C/C++, while more advanced systems provide access to the syntax as objects with rich lexical information and a full programming language to manipulate the syntax.
+Some of these more advanced macro systems even allow programmers to write macros in the same programming language they use to write their programs. 
 
-Combining module systems with advanced macro systems allow programmers to write programs where new features added by macros can be factored into separate modules.
-By grouping a set of features as a module and then using that module in a program, a programmer can essentially write a program in a new language specific for the task.
+These advanced macro systems give programmers the ability to extend a programming language in arbitrary ways, even to the point of being able to create domain specific languages as collections of macros.
+When creating such programs, the details of individual macros are often hidden in modules, and, much like a separately compiled program, these modules need to be linked into an executable. 
+Unlike a separately compiled program though, macros generate code, so they need to run before the program can be compiled.
 
-Compiling a program written in a language with an advanced macro system is difficult because macros need to run before the program can be compiled.
-Because the macros are written in the same programming language as the program, they either need to be interpreted or compiled ahead of time.
-There is also the problem of macros that use other macros in their implementation because they must be ready to run (compiled) before their use.
+Macros written in the same language as the program need to use the same compiler that the language uses, but the compilation needs to happen before normal program compilation.
+Macros can also use other macros in their implementation, which means that those other macros must be ready to run (compiled) before their use.
+This leads to an interleaving of compiling and running code that goes back and forth to ultimately produce the final program.
 
-Separate compilation is also more difficult in the presence of an advanced macro system.
+Separate compilation is more difficult in the presence of an advanced macro system.
 Macros are defined side-by-side with program definitions, which means that macro definitions can be spread across modules and can also use functionality provided in separate modules.
 A compiler for such a language must ensure that modular programs have the same meaning independent of the order in which the modules are compiled.
+
 A solution to the problems of separate compilation with advanced macros is described by Flatt and implemented for the Racket programming language \cite{Flatt}.
 He explains a method of compiling modules in phases, where each phase corresponds to which part of the program is running and which part of the program is compiling.
+In this case, running means executing code, which includes executing macros, because macros are just code as well.
+Compiling means translating code from source code to executable code, perhaps with macros doing part of the translation.
 At phase 0, the main program is running and nothing is compiling.
 At phase 1, the main program is compiling and macros that it uses are running.
 At phase 2, the phase 1 macros are compiling and any macros used in the compilation of phase 1 macros are running, and so on.
+The compiler starts compiling at the highest phase of the program (which can be upwards of phase 70 in normal Racket programs) and compiles each phase downward until it produces phase 0 code. 
 By separating compilation into phases, it is possible to have a both a module system and a macro sytem coexist.
 
-The cost of compiling separately also occurs in this system, in that the optimizer doesn't have the whole program available while compiling a single module and therefore is missing information that it could use in a non-modular program.  Our solution for optimizing modular programs, called demodularization, is to transform a modular program into a non-modular program by combining all runtime code and data in the program into a single module.
+Separate compilation makes compiler optimization more difficult and less effective.
+Good abstractions, provided by splitting a program into modules, are meant to obscure internal implementations so that it is easier for programmers to reason about their programs, but this obscurity also limits information available for optimizations. 
+A single module compiled alone is difficult to optimize because the compiler has little to no information about values that come from other modules when compiling the module.
+Existing optimizations have even less information when modules can extend the compiler, as modules can in languages with advanced macro systems. 
+
+Language implementations have solved the problem of optimizing separately compiled programs in various ways.
+Some implementations of languages avoid the problems associated with separate compilation by not allowing it. 
+The whole-program optimizing compilers Stalin \cite{stalin} for Scheme and MLton \cite{mlton} for ML take this approach.
+Other implementations do optmizations while statically linking the program.
+There are options in gcc \cite{gcc} and clang \cite{clang} to do this type of optimization.
+This type of optimization is usually done on machine code, so it can be too low level to do certain optimizations.
+Some implementations perform cross-module inlining by selectively choosing functions to inline between modules.
+Inlining must be heuristic-based, and good heuristics are hard to develop. 
+Just-In-Time (JIT) compilers attack the problem in a different way by deferring optimizations until the program is running, where is has more information on the actual use of the program.
+
+Our solution for optimizing modular programs in the presence of an advanced macro system, called demodularization, is to transform a modular program into a non-modular program by combining all runtime code and data in the program into a single module.
 Conceptually, this is similar to what static linkers do in programming languages with separate compiliation.
+After combining, the single module is then re-run through the existing optimizer, but this time the optimizer has information about the whole program.
+This part is similar to doing link-time optimization for programming languages with separate compilation, but is at a higher level than most link-time optimizers.
+Demodularization is meant to be done when producing the final production version of a program, so that during development, a programmer can still take advantage of separate compilation.
+
 In a phased module system, finding all of the runtime values is not trivial.
 Phased module systems allow programmers to refer to the same module while writing macros and while writing programs, but macros do not need to be included in the final program because they are only needed to compile the program.
 In order to collect all of the code needed to run a modular program with phases, it is necessary to completely understand at what phases every module in the program is used. 
 A demodularized program does not need to include modules that are only needed during compile-time, but whether or not the module is needed only at compile-time is not obvious from just examining the module in isolation. 
 
-A program with a single module is effectively a non-modular program. 
-After demodularization, a program becomes a single module, so existing optimizers have more information. 
-Also, demodularization enables new optimizations that need whole program information. 
-
-Modular programs are difficult to optimize because the compiler has little to no information about values that come from other modules when compiling a single module.
-Existing optimizations have even less information when modules can extend the compiler. 
-Good abstractions are meant to obscure internal implementations so that it is easier for programmers to reason about their programs, but this obscurity also limits information available for optimizations.  
-In contrast, non-modular programs are simpler to optimize because the compiler has information about every value in the program.
-For example, inlining a function in a non-modular program is trivial because every use of the function is known at compile-time.
-
-% DONE: examples of languages that do these
-% DONE: add a sentece each about why each option is bad/hard
-Some languages avoid the problem of optimizing modular programs by not allowing modules, while others do optimizations at link time, others use inlining, and others use Just-In-Time (JIT) compiling. 
-Not allowing modules defeats the benefits of modular design. 
-Languages such as C and Scheme that do not have well developed module systems make it difficult to manage large programs written in them.
-Link time optimizations can be too low level to do useful optimizations.
-Linking is usually performed on already compiled modules, so any optimizations are performed on machine code and are missing source-level information.
-Inlining must be heuristic-based, and good heuristics are hard to develop. 
-Some work has been done on these heuristics for the ML programming language \cite{258960}.
-JIT compilers attack the problem in a different way by deferring optimizations until the program is running, where is has more information on the actual use of the program.
-
-
-\paragraph{Thesis} Demodularizing programs in a language with a module system and an expressive macro system is feasible and useful.
+\paragraph{Thesis} Demodularizing programs in a language with a module system and an expressive macro system is feasible and yields more optimization opportunity for the compiler, resulting in more efficient code when compared to phased compilation and cross-module inlining.
 
 We show that demodularization is feasible by implementing it for a simple language model and then implementing it for the Racket programming language.
 We show that it is useful by showing that it maintains program meaning and that it improves performance and program size.
