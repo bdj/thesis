@@ -2,8 +2,8 @@
   [node distance=.5in and 1in,
    module/.style={rectangle,draw,inner sep=.25in}
   ]
-\node (obj-comp)   [module] {obj (compile-time)};
-\node (obj-run)    [module] [below=of obj-comp] {obj (runtime)};
+\node (obj-comp)   [module] {counter (compile-time)};
+\node (obj-run)    [module] [below=of obj-comp] {counter (runtime)};
 \node (while-lang) [module] [left=of obj-run] {while-lang}
   edge [->, thick] node[auto]{\racket{require}} (obj-run)
   edge [->, thick] node[auto]{\racket{for-syntax}} (obj-comp);
