@@ -23,7 +23,7 @@ The helper function, \racket{syntax-case} matches syntax patterns so that it is 
 
 % DONE: example should use a function or letrec, not let loop
 % DONE: maybe just use syntax-case here
-\begin{listing}
+\begin{listing}[tb]
   \inputminted{racket}{listings/while-macro.rkt}
   \caption{a macro implementation of a \racket{while} loop}
   \label{lst:while-macro.rkt}
@@ -32,7 +32,7 @@ Listing~\ref{lst:while-macro.rkt} shows how to use one of these macros to write 
 The macro turns a \racket{while} loop into a recursive function and a call to that recursive function.
 Whatever syntax used by the programmer for the \racket{test} and \racket{body ...} forms will be substituted by \racket{syntax-case} into the output of the macro. 
 Listing~\ref{lst:while-expanded.rkt} shows a use of the while macro and what it expands into after running the macro. 
-\begin{listing}
+\begin{listing}[tb]
   \inputminted{racket}{listings/while-expanded.rkt}
   \caption{use and expansion of a \racket{while} loop}
   \label{lst:while-expanded.rkt}
@@ -48,7 +48,7 @@ Also, each use of the macro will have distinct definitions for \racket{while-loo
 Racket modules are a way of grouping definitions, expressions, and macros. 
 Modules also allow control over imports and exports, using the Racket forms \racket{require} and \racket{provide} respectively.
 Listing~\ref{lst:counter.rkt} shows a simple Racket module and some of the features of the Racket module system.
-\begin{listing}
+\begin{listing}[tb]
   \inputminted{racket}{listings/counter.rkt}
   \caption{\texttt{counter.rkt}: A simple Racket module implementing a counter}
   \label{lst:counter.rkt}
@@ -57,7 +57,7 @@ The \texttt{counter} module contains a variable definition and functions for get
 The module only exports the functions, so the module encapsulates the variable.
 If a programmer wanted to use this module, they would import it using \racket{require} as shown in Listing~\ref{lst:while-test.rkt}. 
 
-\begin{listing}
+\begin{listing}[tb]
   \inputminted{racket}{listings/while-test.rkt}
   \caption{\texttt{while-test.rkt}: A Racket module that uses other modules}
   \label{lst:while-test.rkt}
@@ -65,7 +65,7 @@ If a programmer wanted to use this module, they would import it using \racket{re
 
 It is also possible to use modules to help write macros.
 For example, if a programmer wanted to change the \racket{while} macro so that it reported how many expressions were in each while loop, they could use the \texttt{counter} module inside the \racket{while} definition as seen in Listing~\ref{lst:while-lang.rkt}.
-\begin{listing}
+\begin{listing}[tb]
   \inputminted{racket}{listings/while-lang.rkt}
   \caption{\texttt{while-lang.rkt}: A Racket module implementing a language with \racket{while} loops}
   \label{lst:while-lang.rkt}
