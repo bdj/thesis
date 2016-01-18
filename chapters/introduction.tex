@@ -40,7 +40,7 @@ At phase 0, the main program is running and nothing is compiling.
 At phase 1, the main program is compiling and macros that it uses are running.
 At phase 2, the phase 1 macros are compiling and any macros used in the compilation of phase 1 macros are running, and so on.
 The compiler starts compiling at the highest phase of the program (which can be upwards of phase 70 in normal Racket programs) and compiles each phase downward until it produces phase 0 code. 
-By separating compilation into phases, it is possible to have a both a module system and a macro sytem coexist.
+By separating compilation into phases, it is possible to have a both a module system and a macro system coexist.
 
 Separate compilation makes compiler optimization more difficult and less effective.
 Good abstractions, provided by splitting a program into modules, are meant to obscure internal implementations so that it is easier for programmers to reason about their programs, but this obscurity also limits information available for optimizations. 
@@ -50,7 +50,7 @@ Existing optimizations have even less information when modules can extend the co
 Language implementations have solved the problem of optimizing separately compiled programs in various ways.
 Some implementations of languages avoid the problems associated with separate compilation by not allowing it. 
 The whole-program optimizing compilers Stalin \cite{stalin} for Scheme and MLton \cite{mlton} for ML take this approach.
-Other implementations do optmizations while statically linking the program.
+Other implementations do optimizations while statically linking the program.
 There are options in gcc \cite{gcc} and clang \cite{clang} to do this type of optimization.
 This type of optimization is usually done on machine code, so it can be too low level to do certain optimizations.
 Some implementations perform cross-module inlining by selectively choosing functions to inline between modules.
@@ -58,9 +58,9 @@ Inlining must be heuristic-based, and good heuristics are hard to develop.
 Just-In-Time (JIT) compilers attack the problem in a different way by deferring optimizations until the program is running, where it has more information on the actual use of the program.
 
 Our solution for optimizing modular programs in the presence of an advanced macro system, called demodularization, is to transform a modular program into a non-modular program by combining all phase 0 (runtime) code and data in the program into a single module.
-Conceptually, this is similar to what static linkers do in programming languages with separate compiliation, but more complicated because finding all phase 0 code from the set of modules that comprise a program is not trivial.
+Conceptually, this is similar to what static linkers do in programming languages with separate compilation, but more complicated because finding all phase 0 code from the set of modules that comprise a program is not trivial.
 Modules can include other modules at different phase offsets, creating a directed acyclic graph of module relationships.
-In finding and combining all of the phase 0 code, the demodularization algorithm removse code for all other phases because they were only needed to compile the program, not run it.
+In finding and combining all of the phase 0 code, the demodularization algorithm removes code for all other phases because they were only needed to compile the program, not run it.
 
 After combining, the single module is then re-run through the existing optimizer, but this time the optimizer has information about the whole program.
 This part is similar to doing link-time optimization for programming languages with separate compilation, but is at a higher level than most link-time optimizers.
