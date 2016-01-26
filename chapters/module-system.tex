@@ -32,10 +32,12 @@ The helper function, \racket{syntax-case} matches syntax patterns so that it is 
   \caption{a macro implementation of a \racket{while} loop}
   \label{lst:while-macro.rkt}
 \end{listing}
-Listing~\ref{lst:while-macro.rkt} shows how to use one of these macros to write a \racket{while} loop. 
+Listing~\ref{lst:while-macro.rkt} shows how to write a macro that adds \racket{while} loop to the Racket language. 
 The macro turns a \racket{while} loop into a recursive function and a call to that recursive function.
-Whatever syntax used by the programmer for the \racket{test} and \racket{body ...} forms will be substituted by \racket{syntax-case} into the output of the macro. 
+The \mintinline{racket}{#'} creates a syntax object out of the following parenthesized expression. 
+The \racket{test} and \racket{body ...} forms are pattern variables that will be substituted by \racket{syntax-case} when a programmer uses the macro, with \racket{test} matching one expression and \racket{body ...} matching one or more expressions.
 Listing~\ref{lst:while-expanded.rkt} shows a use of the while macro and what it expands into after running the macro. 
+Whatever syntax is in the place of the pattern variables at the use of the macro will be put into the output of the macro.
 \begin{listing}[tb]
   \inputminted{racket}{listings/while-expanded.rkt}
   \caption{use and expansion of a \racket{while} loop}
@@ -43,14 +45,30 @@ Listing~\ref{lst:while-expanded.rkt} shows a use of the while macro and what it 
 \end{listing}
 % DONE: example expansion
 % DONE: fuller explanation of hygeine with citation
+
 Racket's macros are hygienic \cite{hygiene}, which means that identifiers created from programs will not clash with identifiers created from macros. 
 This means that macros are protected from the surrounding program changing their identifiers, and also that the program is protected from the macro changing its identifiers.
-In this example that means that the Racket program using a while loop will not be able to call the \racket{while-loop} function that the macro creates, and that if the program has another definition for \racket{while-loop}, it will be independent from the definition introduced by the macro.
+In this example that means that the Racket program using a while loop macro will not be able to call the resulting \racket{while-loop} function that the macro creates, and that if the program happens to have another definition named \racket{while-loop}, that definition will be independent from the definition introduced by the macro.
 Also, each use of the macro will have distinct definitions for \racket{while-loop} so that the macro can be nested and used multiple times.
+
 \section{Modules}
 % TODO: all listings are modules in separate files
 Racket modules are a way of grouping definitions, expressions, and macros. 
 Modules also allow control over imports and exports, using the Racket forms \racket{require} and \racket{provide} respectively.
+Imports refer to other modules that have definitions for functionality that the importing module needs, and can specify the location of the other modules in multiple ways, from a simple filename to a package on the internet. 
+Exports created by \racket{provide} list all of the identifiers within a module that will be visible by other modules when imported. 
+By default, everything is hidden and a programmer must specify what becomes visible.
+
+Listings~\ref{lst:counter.rkt}-\ref{lst:while-lang.rkt} form an example program that highlights the use of modules and macros together.
+Figure~\ref{fig:modules.tex} shows the relationship between the different modules in the program.
+\begin{figure}
+  \input{figures/modules.tex}
+  \caption{Module dependencies for the \racket{while-test} program}
+  \label{fig:modules.tex}
+\end{figure}
+The main module of the program, \texttt{while-test.rkt} (Listing~\ref{lst:while-test.rkt}), uses a while loop (provided by \texttt{while-lang.rkt} in Listing~\ref{lst:while-lang.rkt}) and a counter (provided by \texttt{counter.rkt} in Listing~\ref{lst:counter.rkt}) to print out counter values.
+The program also uses the \texttt{counter} module at compile-time to print out information about the \racket{while} loop (in this case, how many expressions are in the \racket{while} loop).
+
 Listing~\ref{lst:counter.rkt} shows a simple Racket module and some of the features of the Racket module system.
 \begin{listing}[tb]
   \inputminted{racket}{listings/counter.rkt}
@@ -68,14 +86,20 @@ If a programmer wanted to use this module, they would import it using \racket{re
 \end{listing}
 
 It is also possible to use modules to help write macros.
-For example, if a programmer wanted to change the \racket{while} macro so that it reported how many expressions were in each while loop, they could use the \texttt{counter} module inside the \racket{while} definition as seen in Listing~\ref{lst:while-lang.rkt}.
+For example, if a programmer wanted to change the \racket{while} macro so that it reported how many expressions were in each while loop, they could use functionality from the \texttt{counter} module inside the \racket{while} definition as seen in Listing~\ref{lst:while-lang.rkt}.
+The definition for the \racket{while} loop is the same as in Listing~\ref{while-macro.rkt}, but now there is extra code that runs before the macro returns a syntax object.
+The extra code uses the \texttt{counter} module to count how many expressions are in the body of the while loop and then prints that answer.
+It is possible to add code to the \racket{while} macro because it is just a function from syntax to syntax that runs at compile-time. 
+
 \begin{listing}[tb]
   \inputminted{racket}{listings/while-lang.rkt}
   \caption{\texttt{while-lang.rkt}: A Racket module implementing a language with \racket{while} loops}
   \label{lst:while-lang.rkt}
 \end{listing}
-It is possible to add code to the \racket{while} macro because it is just a function from syntax to syntax that runs at compile-time. 
-Also, the \racket{require} form includes a \racket{for-syntax} form to indicate that the \texttt{counter} module is needed at compile-time (along with the \racket{racket/base} module for \racket{printf}).
+
+Because the macro runs at compile-time and uses the \racket{counter} module at compile-time, the programmer must indicate that fact to the compiler.
+This is done by using the \racket{for-syntax} form. 
+The macro also uses \racket{printf}, which comes from the \texttt{racket/base} module, so that must be imported with \racket{for-syntax} as well.
 Now this module can be used to extend the language of other programs by adding a \racket{while} loop, although it is just a library that is included like any other library.
 
 \section{Languages}
@@ -86,23 +110,8 @@ Using this ability, programmers have added languages for Typed Racket~\cite{type
 Also, because they are modules, it is possible to use them all in the same program and use the right language for each specific problem.
 The language creating facilities of Racket extend to more than just collections of functions and macros; they also allow changing the parser and changing the meaning of things like function application syntax. 
 
-\section{Separate Compilation}
-In the presence of macros that can run arbitrary code, compilation of a single module becomes complicated. 
-Compilation and execution of code has to be interleaved in order to produce the correct compiled program.
-% DONE: explain that listings form a program with multiple modules and while-test is main
-% DONE: include module dependency figure
-All of the listings in the previous section form a program with the \racket{while-test} module as the main module.
-Figure~\ref{fig:modules.tex} shows the relationship between the different modules in the program.
-\begin{figure}
-  \input{figures/modules.tex}
-  \caption{Module dependencies for the \racket{while-test} program}
-  \label{fig:modules.tex}
-\end{figure}
-To compile the program, both the \racket{while-lang} and \racket{counter} need to be compiled before \racket{while-test}, but also the \racket{counter} module needs to be compiled and ready to use while compiling \racket{while-test} because the counter functions are used inside the \racket{while} macro.
-While compiling \racket{while-test}, the \racket{while} macro will be expanded and code from the \racket{counter} module will run.
-The value of the counter is not shared between compiling \racket{while-test} and running it.
-
 \section{Phases}
+
 The way the Racket module system allows for reliable separate compilation is by separating compilation and execution into phases.
 Phase 0 is the execution phase of the main module of a program, what could be considered running the program.
 Phase 1 is the compilation phase of the main module, which could include execution of code inside macros. 
@@ -121,7 +130,34 @@ In the example program above, the \racket{counter} module will be instantiated t
 Even though compilation of a program can go through many phases and interleave compiling and running code many times, side effects that occur during this process are discarded. 
 The separate compilation guarantee of the Racket module system is that ``Any effects of the instantiation of the module's phase 1 due to compilation on the Racket runtime system are discarded'' \cite{sep}. 
 
-\section{Program Evaluation}
+
+\section{Compiling and Running Programs}
+
+Compiling a Racket program interleaves traditional compiling (turning source code into bytecode) and running macros.
+This process can then trigger compilation at higher phases if the macros use other modules in their implementation.
+We will use compiling and running the example program in Listings~\ref{lst:counter.rkt}-\ref{lst:while-lang.rkt} to illustrate the process.
+
+Compilation starts with the main module of the program, in this case \texttt{while-test.rkt}.
+In terms of phases, compilation starts at phase 1.
+Anytime the compiler encounters a \racket{require} form, it will switch to compiling the imported module, which would be \texttt{while-lang.rkt} in the example.
+Compiling \texttt{while-lang.rkt} will trigger compilation of its imports as well, but this time its imports are required with \racket{for-syntax}.
+This means that compilation switches to phase 2, and compiles the imports.
+We can assume that \racket{racket/base} is already compiled, so the compiler moves on to compile \texttt{counter.rkt}. 
+Because \texttt{counter.rkt} has no imports, it can be compiled completely into bytecode.
+Now, the compiler can finish the macro in \texttt{while-lang.rkt} and produce bytecode for the macro. 
+Next, the compiler switches back to phase 1 and continues compiling \texttt{while-test.rkt}.
+The compiler runs into the import for \texttt{counter.rkt}, but it has already been compiled, so it moves on to compiling the body of the module.
+The body contains a use of the \racket{while} macro, so it runs the code for macro, which includes printing out the number of expressions in the \racket{while} loop. 
+Finally, the compiler turns the output of the macro into bytecode and finishes compilation.
+
+To run the program, the Racket runtime loads the compiled bytecode for the \texttt{while-test} module and runs it, and when the runtime encounters imports, it runs them as well. 
+With our example program, that means that nothing will happen on the import of \racket{while-lang} because it just contains a macro, and on the import of \racket{counter} the runtime will load the function definitions and create the \racket{x} variable.
+This is a separate instantiation of the \texttt{counter} module than the one that was used at compile time, so the counter starts fresh from 0.
+
+
+
+\section{Preparing for Demodularization}
+
 Running a separately compiled Racket program involves following all of the \racket{require} forms and running all phase 0 code in the order in which the code is imported.
 It is possible that there will be phase 0 code to run from an imported module where the import path to that module includes phase shifts.
 Module phases are relative to one another, so if one module imports a module at phase 1, which then imports a different module at phase -1, the code in the third module will be at phase 0 relative to the first module and must be run in the final program.

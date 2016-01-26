@@ -66,7 +66,10 @@ After combining, the single module is then re-run through the existing optimizer
 This part is similar to doing link-time optimization for programming languages with separate compilation, but is at a higher level than most link-time optimizers.
 Demodularization is meant to be done when producing the final production version of a program, so that during development, a programmer can still take advantage of separate compilation.
 
-\paragraph{Thesis} Demodularizing programs in a language with a module system and an expressive macro system is feasible and yields more optimization opportunity for the compiler, resulting in more efficient code when compared to phased compilation and cross-module inlining.
+\vspace{1em}
+\noindent
+\textbf{Thesis} \textit{Demodularizing programs in a language with a module system and an expressive macro system is feasible and yields more optimization opportunity for the compiler, resulting in more efficient code when compared to phased compilation and cross-module inlining.}
+\vspace{1em}
 
 The approach we take to validating the thesis is to first describe the Racket module and macro systems in Chapter~\ref{chap:module-system} as an example of a language with a module system and an expressive macro system that is open source.
 Then, in Chapter~\ref{chap:intuition}, we explain demodularization at a high level with a detailed example to show how the algorithm works on a Racket program.
@@ -75,4 +78,5 @@ The operational semantics model removes the unnecessary details of the full impl
 We then describe an actual implementation for Racket (Chapter~\ref{chap:implementation}).
 The implementation presents interesting difficulties in using the Racket bytecode format and integrating with the existing compiler framework written in C.  
 Following that are experimental results of demodularizing and optimizing Racket programs and comparing them to phased compilation and cross-module inlining (Chapter~\ref{chap:evaluation}). 
-The experimental results show that demodularization improves performance, especially when a program is highly modular. 
+The experimental results show that demodularization improves performance, especially when a program is highly modular.
+Finally, we discuss related work on whole program optimization (Chapter~\ref{chap:related-work}) and conclude with a summary and discussion of future work (Chapter~\ref{chap:conclusion}). 
