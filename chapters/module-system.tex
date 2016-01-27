@@ -68,15 +68,15 @@ Listings~\ref{lst:counter.rkt}-\ref{lst:while-lang.rkt} form an example program 
 The main module of the program, \texttt{while-test.rkt} (Listing~\ref{lst:while-test.rkt}), uses a while loop (provided by \texttt{while-lang.rkt} in Listing~\ref{lst:while-lang.rkt}) and a counter (provided by \texttt{counter.rkt} in Listing~\ref{lst:counter.rkt}) to print out counter values.
 The program also uses the \texttt{counter} module at compile-time to print out information about the \racket{while} loop (in this case, how many expressions are in the \racket{while} loop).
 
-Listing~\ref{lst:counter.rkt} shows a simple Racket module and some of the features of the Racket module system.
+Listing~\ref{lst:counter.rkt} shows a simple Racket module that implements a counter object.
+The \texttt{counter} module contains a variable definition and functions for getting and incrementing that variable.
+The module only exports the functions, so the module encapsulates the variable.
+If a programmer wanted to use this module, they would import it using \racket{require} as shown in Listing~\ref{lst:while-test.rkt}. 
 \begin{listing}[tb]
   \inputminted{racket}{listings/counter.rkt}
   \caption{\texttt{counter.rkt}: A simple Racket module implementing a counter}
   \label{lst:counter.rkt}
 \end{listing}
-The \texttt{counter} module contains a variable definition and functions for getting and incrementing that variable.
-The module only exports the functions, so the module encapsulates the variable.
-If a programmer wanted to use this module, they would import it using \racket{require} as shown in Listing~\ref{lst:while-test.rkt}. 
 
 \begin{listing}[tb]
   \inputminted{racket}{listings/while-test.rkt}
@@ -101,14 +101,16 @@ This is done by using the \racket{for-syntax} form.
 The macro also uses \racket{printf}, which comes from the \texttt{racket/base} module, so that must be imported with \racket{for-syntax} as well.
 Now this module can be used to extend the language of other programs by adding a \racket{while} loop, although it is just a library that is included like any other library.
 
-Figure~\ref{fig:modules.tex} shows the require graph of the program, which details the relationship between the different modules in the program.
+The relationships between the modules in a program inform Racket how to compile and run the program, starting with a specified main module.
+The modules form a Directed Acyclic Graph (DAG) which is known as the program's require graph.
+Figure~\ref{fig:modules.tex} shows the require graph of the program with \texttt{while-test} as the main module. 
+The Racket compiler traverses this graph as it compiles the program, compiling each module separately as they are encountered.
+Because macros run during the compilation process, Racket needs a way to determine how to interleave compiling and running macros. 
 \begin{figure}
   \input{figures/modules.tex}
   \caption{Require graph for the \racket{while-test} program}
   \label{fig:modules.tex}
 \end{figure}
-The require graph shows the order in which the imports are traversed when compiling and running the program.
-It also shows whether or not a module is required with \racket{for-syntax}, which determines what phase the module is available at in relation to the rest of the program.
 
 \section{Phases}
 
