@@ -12,15 +12,24 @@ Listing~\ref{lst:main.rkt} shows an example of using such a library.
   \caption{\texttt{main.rkt} module with queue usage}
   \label{lst:main.rkt}
 \end{listing}
-The library is implemented as a macro, shown in Listing~\ref{lst:queue.rkt}, that switches between two implementatations depending on the length of the initial queue.
+The library is implemented as a macro, shown in Listing~\ref{lst:queue.rkt}, that switches between two implementations depending on the length of the initial queue.
+
 \begin{listing}
   \inputminted{racket}{listings/queue.rkt}
   \caption{\texttt{queue.rkt} module}
   \label{lst:queue.rkt}
 \end{listing}
+
+The macro \racket{with-queue} uses \racket{syntax-case} for its pattern-matching capabilities, and creates a syntax object that will use the long or short implementation depending on the length of \racket{(v ...)}. 
+The macro uses a feature from the \texttt{racket/syntax} module called \racket{format-id} which operates like \racket{printf} but instead of creating a string and printing it, it creates a syntax object for an identifier. 
+So, \racket{make-queue} is a syntax object that will refer to either \racket{make-long-queue} or \racket{make-short-queue}.
+Similarly, \racket{enqueue} and \racket{dequeue} will refer to syntax objects for the correct kind of queue.
+The final syntax object is created using \mintinline{racket}{#`} which creates a syntax object but allows for escaping with \mintinline{racket}{#,} to insert the actual syntax objects created above.
+All of this work with syntax objects makes it so that the correct queue will be used at compile-time and there will be no overhead of choosing a queue implementation at runtime, and it will all be invisible to the user of the \racket{with-queue} macro.
+
 Listing~\ref{lst:long-queue.rkt} and Listing~\ref{lst:short-queue.rkt} show the two queue implementations, with the \texttt{long-queue} using vectors and the \texttt{short-queue} using lists. 
-% DONE: say that ... is actual racket syntax
-The \racket{...} notation has meaning in Racket, so \racket{....} is used to indicate elided code.
+The actual implementations are not important for this example, so most of the code is elided.
+The \racket{...} notation has meaning in Racket, so \racket{---} is used to indicate elided code.
 
 \begin{listing}
   \inputminted{racket}{listings/long-queue.rkt}
@@ -34,8 +43,14 @@ The \racket{...} notation has meaning in Racket, so \racket{....} is used to ind
   \label{lst:short-queue.rkt}
 \end{listing}
 
+The require graph for this program is shown in Figure~\ref{fig:queue-modules.tex}.
+The \texttt{main} module only includes the \texttt{queue} module, and the \texttt{queue} module includes two modules using \racket{for-syntax} and two using \racket{require}.
 
-\section{Compilation}
+\begin{figure}
+  \input{figures/queue-modules.tex}
+  \caption{Require graph for the \racket{main} program}
+  \label{fig:queue-modules.tex}
+\end{figure}
 
 Compiling this program involves expanding the \racket{with-queue} macro, which will turn the program into Listing~\ref{lst:main-expanded.rkt}.
 
@@ -53,9 +68,11 @@ The program has calls to functions in the \racket{long-queue} module, so the opt
 
 \section{Demodularization}
 
-Demodularization of the program proceeds by following the \racket{require} graph and including all phase 0 code from the required modules into the main module of the program. 
-The \racket{main} module requires the \racket{queue} module, but the \racket{queue} module only has phase 1 code, so it is not included in the final module.
-The \racket{queue} module requires the \racket{long-queue} and \racket{short-queue} modules, which have various phase 0 definitions that get included in the order they appear in their original modules.
+Demodularization of the program proceeds by following the require graph and including all phase 0 code from the required modules into the main module of the program. 
+The \racket{main} module requires the \racket{queue} module, but the \racket{queue} module only has a macro definition, which is phase 1 code, so it is not put into the main module.
+The \racket{queue} module requires \texttt{racket/base} and \texttt{racket/syntax} using \racket{for-syntax}, which means that all of their definitions are imported at phase 1 and do not need to be included in the output (it is possible that they have definitions for phase -1 which would need to be included, but in this simple example we will ignore that). 
+Next, demodularization reaches the imports for the \racket{short-queue} and \racket{long-queue} modules and includes all of their definitions (which are all phase 0) in the order they appear in their original modules.
+The demodularization algorithm then removes all imports from the main module of the program because all code has been included directly in the main module.
 Listing~\ref{lst:main-demodularized.rkt} shows what the demodularized example program would look like.
 
 \begin{listing}

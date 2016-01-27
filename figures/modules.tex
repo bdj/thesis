@@ -1,10 +1,12 @@
 \begin{tikzpicture}
   [node distance=.5in and 1in,
-   module/.style={rectangle,draw,inner sep=.25in}
+   module/.style={rectangle,draw,inner sep=.125in}
   ]
 \node (obj-run)    [module]  {counter};
+\node (racket-base) [module] [above=of obj-run] {racket/base};
 \node (while-lang) [module] [left=of obj-run] {while-lang}
-  edge [->, thick] node[auto]{\racket{for-syntax}} (obj-run);
+  edge [->, thick] node[auto]{\racket{for-syntax}} (obj-run)
+  edge [->, thick] node[auto]{\racket{for-syntax}} (racket-base);
 \node (while-test) [module] [below=of while-lang] {while-test}
   edge [->, thick] node[auto]{\racket{require}} (while-lang) 
   edge [->, thick, bend right] node[swap,auto]{\racket{require}} (obj-run.south);

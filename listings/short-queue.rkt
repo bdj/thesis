@@ -1,11 +1,11 @@
 #lang racket/base
 (define (make-short-queue . vs)
-  .... list ....)
+  --- list ---)
 
 (define (short-enqueue q v)
-  .... cons ....)
+  --- cons ---)
 
 (define (short-dequeue q)
-  .... list-ref ....)
+  --- list-ref ---)
 
 (provide (all-defined-out))

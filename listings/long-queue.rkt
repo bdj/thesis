@@ -1,11 +1,11 @@
 #lang racket/base
 (define (make-long-queue . vs)
-  .... make-vector ....)
+  --- make-vector ---)
 
 (define (long-enqueue q v)
-  .... vector-set! ....)
+  --- vector-set! ---)
 
 (define (long-dequeue q)
-  .... vector-ref ....)
+  --- vector-ref ---)
 
 (provide (all-defined-out))

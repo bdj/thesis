@@ -13,6 +13,11 @@ The macro system, a heritage from LISP~\cite{LISP} and Scheme~\cite{scheme}, all
 The module system allows programmers to separate their programs into logical parts and hide implementation details. 
 Together, they allow programmers to create Languages as Libraries~\cite{lal} that are suitable for specific tasks.
 
+The ability to use modules as languages allows programmers to write specialized domain-specific languages (DSLs) to better express solutions to domain problems. 
+Using this ability, programmers have added languages for Typed Racket~\cite{typed}, Object-Oriented Racket~\cite{oo}, Logic Programming~\cite{logic}, and more.
+Also, because they are modules, it is possible to use them all in the same program and use the right language for each specific problem.
+The language creating facilities of Racket extend to more than just collections of functions and macros; they also allow changing the parser and changing the meaning of things like function application syntax. 
+
 % TODO: mention that programs can extend themselves in the same file
 \section{Macros}
 Macros are the main way programmers add new features to Racket. 
@@ -55,17 +60,11 @@ Also, each use of the macro will have distinct definitions for \racket{while-loo
 % TODO: all listings are modules in separate files
 Racket modules are a way of grouping definitions, expressions, and macros. 
 Modules also allow control over imports and exports, using the Racket forms \racket{require} and \racket{provide} respectively.
-Imports refer to other modules that have definitions for functionality that the importing module needs, and can specify the location of the other modules in multiple ways, from a simple filename to a package on the internet. 
+Imports refer to other modules that have definitions for functionality that the importing module needs by specifying the location of the other modules.
 Exports created by \racket{provide} list all of the identifiers within a module that will be visible by other modules when imported. 
 By default, everything is hidden and a programmer must specify what becomes visible.
 
 Listings~\ref{lst:counter.rkt}-\ref{lst:while-lang.rkt} form an example program that highlights the use of modules and macros together.
-Figure~\ref{fig:modules.tex} shows the relationship between the different modules in the program.
-\begin{figure}
-  \input{figures/modules.tex}
-  \caption{Module dependencies for the \racket{while-test} program}
-  \label{fig:modules.tex}
-\end{figure}
 The main module of the program, \texttt{while-test.rkt} (Listing~\ref{lst:while-test.rkt}), uses a while loop (provided by \texttt{while-lang.rkt} in Listing~\ref{lst:while-lang.rkt}) and a counter (provided by \texttt{counter.rkt} in Listing~\ref{lst:counter.rkt}) to print out counter values.
 The program also uses the \texttt{counter} module at compile-time to print out information about the \racket{while} loop (in this case, how many expressions are in the \racket{while} loop).
 
@@ -102,13 +101,14 @@ This is done by using the \racket{for-syntax} form.
 The macro also uses \racket{printf}, which comes from the \texttt{racket/base} module, so that must be imported with \racket{for-syntax} as well.
 Now this module can be used to extend the language of other programs by adding a \racket{while} loop, although it is just a library that is included like any other library.
 
-\section{Languages}
-% TODO: Rewrite this section, it sucks
-The ability to use modules as languages allows programmers to write specialized domain-specific languages (DSLs) to better express solutions to domain problems. 
-% TODO: akward sentence
-Using this ability, programmers have added languages for Typed Racket~\cite{typed}, Object-Oriented Racket~\cite{oo}, Logic Programming~\cite{logic}, and more.
-Also, because they are modules, it is possible to use them all in the same program and use the right language for each specific problem.
-The language creating facilities of Racket extend to more than just collections of functions and macros; they also allow changing the parser and changing the meaning of things like function application syntax. 
+Figure~\ref{fig:modules.tex} shows the require graph of the program, which details the relationship between the different modules in the program.
+\begin{figure}
+  \input{figures/modules.tex}
+  \caption{Require graph for the \racket{while-test} program}
+  \label{fig:modules.tex}
+\end{figure}
+The require graph shows the order in which the imports are traversed when compiling and running the program.
+It also shows whether or not a module is required with \racket{for-syntax}, which determines what phase the module is available at in relation to the rest of the program.
 
 \section{Phases}
 
@@ -147,7 +147,7 @@ Because \texttt{counter.rkt} has no imports, it can be compiled completely into 
 Now, the compiler can finish the macro in \texttt{while-lang.rkt} and produce bytecode for the macro. 
 Next, the compiler switches back to phase 1 and continues compiling \texttt{while-test.rkt}.
 The compiler runs into the import for \texttt{counter.rkt}, but it has already been compiled, so it moves on to compiling the body of the module.
-The body contains a use of the \racket{while} macro, so it runs the code for macro, which includes printing out the number of expressions in the \racket{while} loop. 
+The body contains a use of the \racket{while} macro, so it runs the code for the macro, which includes printing out the number of expressions in the \racket{while} loop. 
 Finally, the compiler turns the output of the macro into bytecode and finishes compilation.
 
 To run the program, the Racket runtime loads the compiled bytecode for the \texttt{while-test} module and runs it, and when the runtime encounters imports, it runs them as well. 

@@ -1,22 +1,22 @@
 (module main racket/base
   (#%module-begin
    (define (make-short-queue . vs)
-    .... list ....)
+    --- list ---)
 
    (define (short-enqueue q v)
-    .... cons ....)
+    --- cons ---)
 
    (define (short-dequeue q)
-    .... list-ref ....)
+    --- list-ref ---)
 
    (define (make-long-queue . vs)
-    .... make-vector ....)
+    --- make-vector ---)
 
    (define (long-enqueue q v)
-    .... vector-set! ....)
+    --- vector-set! ---)
 
    (define (long-dequeue q)
-    .... vector-ref ....)
+    --- vector-ref ---)
 
    (let ((q (make-long-queue 1 2 3 4 5 6)))
      (define (dequeue) (long-dequeue q))
