@@ -7,14 +7,14 @@ The following example program illustrates the need for demodularization and how 
 \section{Example Program}
 A programmer wants to use a queue library where the library uses different backing structures depending on the length of the queue. 
 Listing~\ref{lst:main.rkt} shows an example of using such a library.
-\begin{listing}
+\begin{listing}[tb]
   \inputminted{racket}{listings/main.rkt}
   \caption{\texttt{main.rkt} module with queue usage}
   \label{lst:main.rkt}
 \end{listing}
 The library is implemented as a macro, shown in Listing~\ref{lst:queue.rkt}, that switches between two implementations depending on the length of the initial queue.
 
-\begin{listing}
+\begin{listing}[tb]
   \inputminted{racket}{listings/queue.rkt}
   \caption{\texttt{queue.rkt} module}
   \label{lst:queue.rkt}
@@ -31,7 +31,7 @@ In this example, that means that \mintinline{racket}{#,make-queue} will be \rack
 All of this work with syntax objects makes it so that the correct queue will be chosen at compile-time.
 There will be no overhead of choosing a queue implementation at runtime, and the whole process will be invisible to the user of the \racket{with-queue} macro.
 
-Listing~\ref{lst:queues.rkt} show the public interfaces for two queue modules, with the \texttt{long-queue} using vectors and the \texttt{short-queue} using lists. 
+Listing~\ref{lst:queues.rkt} shows the public interfaces for two queue modules, with the \texttt{long-queue} using vectors and the \texttt{short-queue} using lists. 
 The actual implementations are not important for this example, so most of the code is elided.
 The \racket{...} notation has meaning in Racket, so \racket{---} is used to indicate elided code.
 
@@ -52,7 +52,7 @@ The \racket{...} notation has meaning in Racket, so \racket{---} is used to indi
 \end{minipage}
 \end{lrbox}
 
-\begin{listing}
+\begin{listing}[t]
   \begin{tabular}{c c}
     \usebox{\longqueue}
     &
@@ -61,7 +61,7 @@ The \racket{...} notation has meaning in Racket, so \racket{---} is used to indi
     \rule{0pt}{1em} \\
     (a) & (b)
   \end{tabular}
-  \caption{\texttt{long-queue.rkt} (a) and \texttt{short-queue.rkt} (b) modules}
+  \caption{Interfaces for two queues using different backing structures. (a) \texttt{long-queue.rkt} using a vector and (b) \texttt{short-queue.rkt} using a list.}
   \label{lst:queues.rkt}
 \end{listing}
 
@@ -81,7 +81,7 @@ This form is sufficient to illustrate the difficulty of optimizing separately co
 The program has calls to functions in the \racket{long-queue} module, but the optimizer does not have access to the functions.
 The optimizer must treat the functions as if they are black boxes, so it cannot inline them.
 
-\begin{listing}
+\begin{listing}[tb]
   \inputminted{racket}{listings/main-expanded.rkt}
   \caption{\texttt{main.rkt} module after macro expansion}
   \label{lst:main-expanded.rkt}
@@ -92,13 +92,13 @@ The optimizer must treat the functions as if they are black boxes, so it cannot 
 
 Demodularization of the program proceeds by following the require graph and including all phase 0 code from the required modules into the main module of the program. 
 At this point all of the modules have been separately compiled, so all macro expansion has been done already.
-The require graph (Figure~\ref{queue-modules.tex}), starting at the \racket{main} module, requires the \racket{queue} module, but the \racket{queue} module only has a macro definition, which is phase 1 code, so it is not put into the main module.
-Again following the graph, the \racket{queue} module requires \texttt{racket/base} and \texttt{racket/syntax} using \racket{for-syntax}, which means that all of their definitions are imported at phase 1 and do not need to be included in the output (it is possible that they have definitions for phase -1 which would need to be included, but in this simple example we will ignore that). 
+The require graph (Figure~\ref{fig:queue-modules.tex}), starting at the \racket{main} module, requires the \racket{queue} module, but the \racket{queue} module only has a macro definition, which is phase 1 code, so it is not put into the main module.
+Again following the graph, the \racket{queue} module requires \texttt{racket/base} and \texttt{racket/syntax} using \racket{for-syntax}, which means that all of their definitions are imported at phase 1 and do not need to be included in the output. 
 Next, demodularization reaches the edges in the graph corresponding to the imports for the \racket{short-queue} and \racket{long-queue} modules and includes all of their definitions (which are all phase 0) in the order they appear in their original modules.
 The demodularization algorithm then removes all imports from the main module of the program because all code has been included directly in the main module.
 Listing~\ref{lst:main-demodularized.rkt} shows what the demodularized example program would look like.
 
-\begin{listing}
+\begin{listing}[tb]
   \inputminted{racket}{listings/main-demodularized.rkt}
   \caption{\texttt{main.rkt} module after demodularization}
   \label{lst:main-demodularized.rkt}
@@ -118,9 +118,57 @@ The final version of the example program after optimization is shown in Listing~
 The code has a smaller footprint and avoids function call overhead when interacting with the queue.
 This example shows that many optimizations are enabled through demodularization of a separately compiled Racket program.
 
-\begin{listing}
+\begin{listing}[tb]
   \inputminted{racket}{listings/main-optimized.rkt}
   \caption{\texttt{main.rkt} module after optimization}
   \label{lst:main-optimized.rkt}
 \end{listing}
+
+\section{Demodularization with Phases}
+
+Demodularization needs to keep track of at what phase modules are imported in order to include all necessary code to run the final program.
+In the previous example, an algorithm that just gathered phase 0 definitions and discarded phase 1 definitions would have been sufficient, but there are more complicated module relationships where it would not be sufficient.
+
+Listings~\ref{lst:a.rkt}-\ref{lst:c.rkt} form a program where a simple demodularization algorithm would not work.
+It is easiest to understand this program working backwards, starting with the \texttt{c} module (Listing~\ref{lst:c.rkt}).
+The \texttt{c} module just defines a variable \racket{z} and exports it.
+The \texttt{b} module (Listing~\ref{lst:b.rkt}) imports the \texttt{c} module using \racket{for-template}.
+This means that the definitions from module \texttt{c} are at phase (-1) relative to module \texttt{b} and can be used when creating syntax objects to refer to the actual binding of an identifier.
+Module \texttt{b} defines a new variable \racket{y} which is a syntax object that refers to \racket{z}.
+Module \texttt{a} (Listing~\ref{lst:a.rkt}) imports module \texttt{b} using \racket{for-syntax}, meaning it can use definitions from \texttt{b} inside macro definitions.
+Module \texttt{a} uses the definition for \racket{y} inside a macro, and then calls the macro.
+
+\begin{listing}[tb]
+  \inputminted{racket}{listings/a.rkt}
+  \caption{\texttt{a.rkt} module}
+  \label{lst:a.rkt}
+\end{listing}
+
+\begin{listing}[tb]
+  \inputminted{racket}{listings/b.rkt}
+  \caption{\texttt{b.rkt} module}
+  \label{lst:b.rkt}
+\end{listing}
+
+\begin{listing}[tb]
+  \inputminted{racket}{listings/c.rkt}
+  \caption{\texttt{c.rkt} module}
+  \label{lst:c.rkt}
+\end{listing}
+
+When this program is compiled, the macro will be expanded and module \texttt{a} will have a reference directly to the variable \racket{z}. 
+This means that in order to run the program, the code from module \texttt{c} needs to run.
+Demodularization therefore needs to include module \texttt{c} in the final output of the program as well.
+
+Demodularization follows the require graph for the program (Figure~\ref{fig:d-modules.tex}), but it also keeps track of the current phase relative to the main module of the program.
+In this example, demodularization will visit module \texttt{b} at phase 1, so it will not include the definition for \racket{y} in the output of the program.
+It will then visit module \texttt{c}, which is at phase (-1) relative to module \texttt{b}, which makes it equal to phase 0 of the main module of the program.
+Demodularization will then include the code from module \texttt{c}.
+
+\begin{figure}[tb]
+  \input{figures/d-modules.tex}
+  \caption{Require graph for the \racket{a} program}
+  \label{fig:d-modules.tex}
+\end{figure}
+
 

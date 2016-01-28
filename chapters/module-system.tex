@@ -86,7 +86,7 @@ If a programmer wanted to use this module, they would import it using \racket{re
 
 It is also possible to use modules to help write macros.
 For example, if a programmer wanted to change the \racket{while} macro so that it reported how many expressions were in each while loop, they could use functionality from the \texttt{counter} module inside the \racket{while} definition as seen in Listing~\ref{lst:while-lang.rkt}.
-The definition for the \racket{while} loop is the same as in Listing~\ref{while-macro.rkt}, but now there is extra code that runs before the macro returns a syntax object.
+The definition for the \racket{while} loop is the same as in Listing~\ref{lst:while-macro.rkt}, but now there is extra code that runs before the macro returns a syntax object.
 The extra code uses the \texttt{counter} module to count how many expressions are in the body of the while loop and then prints that answer.
 It is possible to add code to the \racket{while} macro because it is just a function from syntax to syntax that runs at compile-time. 
 
@@ -123,7 +123,7 @@ Higher phases occur when macros use other macros in their implementation.
 Another way higher phases occur is by importing modules for use inside a macro.
 In the example program, the \racket{while-lang} module imports the \racket{counter} module using \racket{for-syntax}.
 The \racket{for-syntax} form means that the module will be included for use at phase 1 relative to the including module, so that its code is available to use inside macro definitions.
-There is an analogous form, \racket{for-template}, that will include code at phase -1 relative to the including module, so that the included module's code will be available for use inside the output of a macro. 
+There is an analogous form, \racket{for-template}, that will include code at phase (-1) relative to the including module, so that the included module's code will be available for use inside the output of a macro. 
 By allowing references to relative phases going in both directions, a Racket program can have a complex structure of imports and exports.
 
 It is possible for a single module to be used in multiple phases, and each phase will have a separate instantiation of the module.
@@ -162,7 +162,7 @@ This is a separate instantiation of the \texttt{counter} module than the one tha
 
 Running a separately compiled Racket program involves following all of the \racket{require} forms and running all phase 0 code in the order in which the code is imported.
 It is possible that there will be phase 0 code to run from an imported module where the import path to that module includes phase shifts.
-Module phases are relative to one another, so if one module imports a module at phase 1, which then imports a different module at phase -1, the code in the third module will be at phase 0 relative to the first module and must be run in the final program.
+Module phases are relative to one another, so if one module imports a module at phase 1, which then imports a different module at phase (-1), the code in the third module will be at phase 0 relative to the first module and must be run in the final program.
 
 By understanding how Racket programs are compiled and evaluated, it is apparent that only phase 0 code is necessary to run the program. 
 This is the basis for how demodularization can recover whole programs from separately compiled Racket modules. 

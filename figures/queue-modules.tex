@@ -1,0 +1,17 @@
+\begin{tikzpicture}
+  [node distance=.5in and 1in,
+   module/.style={rectangle,draw,inner sep=.125in}
+  ]
+\node (main) [module] {main};
+\node (queue) [module] [right=of main] {queue}
+  edge [<-, thick] node[auto]{\racket{require}} (main);
+\node (short) [module] [right=of queue] {short-queue}
+  edge [<-, thick] node[auto]{\racket{require}} (queue);
+\node (long) [module] [below=of short] {long-queue}
+  edge [<-, thick] node[auto]{\racket{require}} (queue);
+\node (racket-syntax) [module] [above=of short] {racket/syntax}
+  edge [<-, thick] node[auto]{\racket{for-syntax}} (queue);
+\node (racket-base) [module] [above=of racket-syntax] {racket/base}
+  edge [<-, thick] node[left]{\racket{for-syntax}} (queue);
+
+\end{tikzpicture}

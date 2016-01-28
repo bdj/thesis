@@ -1,0 +1,13 @@
+\begin{tikzpicture}
+  [node distance=.5in and 1.25in,
+   module/.style={rectangle,draw,inner sep=.125in}
+  ]
+  \node (a) [module] {a};
+  \node (racket-base) [module] [above=of a] {racket/base}
+  edge [<-, thick] node[left]{\racket{for-syntax}} (a);
+  \node (b) [module] [right=of racket-base] {b} 
+  edge [<-, thick] node[auto]{\racket{for-syntax}} (a);
+  \node (c) [module] [below=of b] {c}
+  edge [<-, thick] node[right]{\racket{for-template}} (b);
+
+\end{tikzpicture}
