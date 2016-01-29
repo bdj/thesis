@@ -61,7 +61,9 @@ The code no longer contains definitions, and all code has been sorted into the a
 
 \begin{listing}
   \begin{minted}{racket}
-    ((module foo ((require bar @ 1)) ((0 ((set! (bar x) 3))) (1 ((set! (foo x) (+ (bar y) 8))))))
+    ((module foo ((require bar @ 1)) 
+      ((0 ((set! (bar x) 3))) 
+       (1 ((set! (foo x) (+ (bar y) 8))))))
      (module bar () ((-1 ((set! (bar x) 9))) (0 ((set! (bar y) 4))))))
   \end{minted}
   \label{lst:comp-example}
