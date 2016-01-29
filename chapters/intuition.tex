@@ -26,7 +26,7 @@ So, \racket{make-queue} is a syntax object that will refer to either \racket{mak
 Similarly, \racket{enqueue} and \racket{dequeue} will refer to syntax objects for the correct kind of queue.
 
 The final syntax object is created using \mintinline{racket}{#`} which creates a syntax object but allows for escaping with \mintinline{racket}{#,}. 
-Escaping means that the value of escaped form will be used rather than the literal form. 
+Escaping means that the value of the escaped form will be used rather than the literal form. 
 In this example, that means that \mintinline{racket}{#,make-queue} will be \racket{make-long-queue} in the output of the macro rather than \racket{make-queue}.
 All of this work with syntax objects makes it so that the correct queue will be chosen at compile-time.
 There will be no overhead of choosing a queue implementation at runtime, and the whole process will be invisible to the user of the \racket{with-queue} macro.
@@ -106,9 +106,9 @@ Listing~\ref{lst:main-demodularized.rkt} shows what the demodularized example pr
 
 % DONE: make a point that extra queue implementation is there
 The demodularized program should have the exact same behavior at runtime as the modular program.
-The only thing that changes is that require graph of the program has a single node in it with no edges, and all phase 0 code is in the main module. 
+The only thing that changes is that the require graph of the program has a single node in it with no edges, and all phase 0 code is in the main module. 
 Also, both queue implementations appear in the demodularized program even though only one of them is used.
-This extra code is addressed in the optimization pass.
+This extra code is removed in the optimization pass.
 
 \section{Optimization}
 
@@ -126,8 +126,11 @@ This example shows that many optimizations are enabled through demodularization 
 
 \section{Demodularization with Phases}
 
-Demodularization needs to keep track of at what phase modules are imported in order to include all necessary code to run the final program.
-In the previous example, an algorithm that just gathered phase 0 definitions and discarded phase 1 definitions would have been sufficient, but there are more complicated module relationships where it would not be sufficient.
+Demodularization needs to keep track of the phase at which modules are imported in order to include all the necessary code to run the final program (i.e., no external dependencies).
+The example in the previous section only required phase 0 code from the various modules in the require graph; however, there are more complicated relationships where not just phase 0 code is required in traversing the require graph even though all of the modules are already compiled.
+This more complex demodularization happens when a module uses the \racket{for-template} form to import another module.
+The \racket{for-template} form includes code at phase (-1), which allows the definitions of the included module to be used in the output of a macro. 
+The ability for a Racket program to refer to both positive and negative phases is the reason demodularization must track module phases as it traverses the require graph of a program.
 
 Listings~\ref{lst:a.rkt}-\ref{lst:c.rkt} form a program where a simple demodularization algorithm would not work.
 It is easiest to understand this program working backwards, starting with the \texttt{c} module (Listing~\ref{lst:c.rkt}).
@@ -164,6 +167,7 @@ Demodularization follows the require graph for the program (Figure~\ref{fig:d-mo
 In this example, demodularization will visit module \texttt{b} at phase 1, so it will not include the definition for \racket{y} in the output of the program.
 It will then visit module \texttt{c}, which is at phase (-1) relative to module \texttt{b}, which makes it equal to phase 0 of the main module of the program.
 Demodularization will then include the code from module \texttt{c}.
+In this way, the demodularization algorithm tracks phases as it traverses the require graph, including all phase 0 code from modules, until it creates a single module with no dependencies.
 
 \begin{figure}[tb]
   \input{figures/d-modules.tex}
