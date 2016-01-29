@@ -78,10 +78,10 @@ Also, smaller code size can be a benefit by itself in space constrained or netwo
 
 \section{Further Optimizations}
 
-Having access to the whole-program at once enables optmizations that currently are not implemented by the Racket optimizer.
+Having access to the whole-program at once enables optimizations that currently are not implemented by the Racket optimizer.
 For example, any optimizations that rely on Control-Flow Analysis (CFA) \cite{cfa} require access to the whole program.
 These include type test eliminations and inlining inside function definitions based on arguments.
-Demodularization enables these sorts of optmiziations to be performed on modular programs.
+Demodularization enables these sorts of optimizations to be performed on modular programs.
 
 Demodularization is a simple solution to the optimization problems that arise from modular programming. 
 Even just using existing optimizations that were not implemented with whole programs in mind, we see some benefits in performance. 

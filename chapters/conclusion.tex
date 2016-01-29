@@ -2,9 +2,9 @@
 \label{chap:conclusion}
 
 Demodularization is a useful optimization for deploying modular programs. 
-A programmer can write a modular program and get the benefits of separate compilation while devloping the program, and then get additional speedups by running the demodularizer on the completed program.
+A programmer can write a modular program and get the benefits of separate compilation while developing the program, and then get additional speedups by running the demodularizer on the completed program.
 Demodularization also enables new optimizations that are not feasible to implement for modular programs.
 Without module boundaries, inter-procedural analysis is much easier and worthwhile.
-Also, dead code elmination works much better because the whole program is visible, while in a modular program, only dead code that is private to the module can be eliminated.
+Also, dead code elimination works much better because the whole program is visible, while in a modular program, only dead code that is private to the module can be eliminated.
 We would like to see implementations of Control-Flow Analysis for Racket programs now that whole programs are accessible through demodularization.
 

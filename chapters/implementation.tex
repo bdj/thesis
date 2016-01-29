@@ -15,12 +15,12 @@ Figure~\ref{fig:compilation} shows the compilation process that a Racket module 
   \label{fig:compilation}
   \caption{Racket compilation process}
 \end{figure}
-In principle it would be possible to write the demodularization algorithm for modules at any point in this process, but we chose to write it at the bytecode level because it is a well defined file type and phases are clearly deliniated.
+In principle it would be possible to write the demodularization algorithm for modules at any point in this process, but we chose to write it at the bytecode level because it is a well defined file type and phases are clearly delineated.
 
 The compilation process for Racket is all written in C.
 The first step of compiling a Racket module is to expand all of the macros it uses into what is known as the Racket kernel language or fully expanded code.
 The next step is compilation to an Intermediate Representation (IR) made up of C data structures.
-The optimizer works on this IR to produce an optmized version of it.
+The optimizer works on this IR to produce an optimized version of it.
 Then, the compiler finishes turning the IR into bytecode.
 
 \section{Racket bytecode}
@@ -72,7 +72,7 @@ In the example in Listing~\ref{lst:kernel-bytecode.rkt}, when the algorithm incl
 
 For demodularization to be useful, the program needs to be optimized after demodularizing it.
 % TODO: relate back to thesis rather than say we wanted
-To optmize the demodularized bytecode, we wanted the existing Racket optimizer built into the Racket compiler so that we get all existing optimizations ``for free'' and any new optimizations in the future will work on both regularly compiled and demodularized programs.
+To optimize the demodularized bytecode, we wanted the existing Racket optimizer built into the Racket compiler so that we get all existing optimizations ``for free'' and any new optimizations in the future will work on both regularly compiled and demodularized programs.
 The existing optimizer works on an intermediate form between fully-expanded Racket code and Racket bytecode.
 This intermediate form only exists as C data structures in the implementation of Racket.
 Therefore, to use the existing optimizer, Racket bytecode needed to be decompiled into this intermediate form. 
@@ -91,7 +91,7 @@ Nothing like this exists in the intermediate form, so to decompile cyclic closur
 % TODO: maybe an example of this as well
 
 Finally, Racket bytecode allows reference arguments (like C++ reference arguments) in functions, but the intermediate form doesn't allow them.
-The decompiler turns reference arguments into \racket{case-lamdba} closures over the reference arguments with one case for getting the argument value and one case for setting the argument value. 
+The decompiler turns reference arguments into \racket{case-lambda} closures over the reference arguments with one case for getting the argument value and one case for setting the argument value. 
 
 % TODO: how to know if it works (verification) paragraph
 The decompilation algorithm is not the identity function when composed with compilation because of the transformations performed on cyclic closures and reference arguments.
@@ -110,7 +110,7 @@ This is okay because such programs are fundamentally incomplete programs whose f
 
 \section{Usage}
 The implementation of demodularization is included in the Racket distribution as part of the build tool \racket{raco}. 
-Users can pass in a module they would like to demodularize and optmize to the tool and it will compile all the necessary modules, run the demodularization algorithm on them, decompile the resulting module, and run optimizations on it to produce the final module.
+Users can pass in a module they would like to demodularize and optimize to the tool and it will compile all the necessary modules, run the demodularization algorithm on them, decompile the resulting module, and run optimizations on it to produce the final module.
 For example, to demodularize a program whose main module was \texttt{while-test.rkt}, a user would type the following command: 
 
 \begin{verbatim}
