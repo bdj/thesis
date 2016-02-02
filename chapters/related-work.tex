@@ -7,5 +7,5 @@ The first approach is based on selectively inlining code across module boundarie
 The second approach is taking already compiled modules, combining them into a single module, and optimizing the single module at link time \cite{sutter,727617}. Most of the work done with this approach optimized at the assembly code level, but because they were able to view the whole program, the performance increases were still valuable. 
 The link-time optimization system by Sutter et al. \cite{sutter} achieves a 19\% speedup on C programs.
 One of the reasons for starting with compiled modules is so that programs using multiple languages can be optimized in a common language, like the work done by Debray et al. \cite{727617} to combine a program written in both Scheme and Fortran. The main problem with this approach is that the common language has less information for optimization than the source code had. 
-These approaches are similar to demodularization, but the operate at a lower level and work on languages without phased module systems.
+These approaches are similar to demodularization, but they operate at a lower level and work on languages without phased module systems.
 

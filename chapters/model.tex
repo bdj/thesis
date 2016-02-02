@@ -46,7 +46,7 @@ The grammar in Figure~\ref{fig:compiled-lang} specifies the compiled language fo
 
 The grammar no longer has definitions, all variables now include module references, and code is sorted into phases.
 The actual compilation function is not relevant to demodularization.
-As an example of the compilation process, consider Listing~4.1.
+As an example of the compilation process, consider Listing~\ref{lst:exp-example}.
 It shows a program in the \emph{mod} language.
 Listing~\ref{lst:comp-example} shows what this program would look like after compilation.
 The code no longer contains definitions, and all code has been sorted into the appropriate phases.
@@ -55,8 +55,8 @@ The code no longer contains definitions, and all code has been sorted into the a
     ((module foo ((require bar @ 1)) ((define x @ 1 as (+ y 8))) ((set! x 3)))
      (module bar () ((define x @ -1 as 9) (define y @ 0 as 4)) ()))
   \end{minted}
-  \label{lst:exp-example}
   \caption{Example program in the \emph{mod} language}
+  \label{lst:exp-example}
 \end{listing}
 
 \begin{listing}
@@ -66,8 +66,8 @@ The code no longer contains definitions, and all code has been sorted into the a
        (1 ((set! (foo x) (+ (bar y) 8))))))
      (module bar () ((-1 ((set! (bar x) 9))) (0 ((set! (bar y) 4))))))
   \end{minted}
-  \label{lst:comp-example}
   \caption{Compiled version of example program}
+  \label{lst:comp-example}
 \end{listing}
 
 \section{Evaluation}

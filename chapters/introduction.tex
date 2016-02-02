@@ -40,7 +40,7 @@ At phase 0, the main program is running and nothing is compiling.
 At phase 1, the main program is compiling and macros that it uses are running.
 At phase 2, the phase 1 macros are compiling and any macros used in the compilation of phase 1 macros are running, and so on.
 The compiler starts compiling at the highest phase of the program (which can be upwards of phase 70 in normal Racket programs) and compiles each phase downward until it produces phase 0 code. 
-By separating compilation into phases, it is possible to have a both a module system and a macro system coexist.
+By separating compilation into phases, it is possible to have both a module system and a macro system coexist.
 
 Separate compilation makes compiler optimization more difficult and less effective.
 Good abstractions, provided by splitting a program into modules, are meant to obscure internal implementations so that it is easier for programmers to reason about their programs, but this obscurity also limits information available for optimizations. 

@@ -57,8 +57,8 @@ Figure~\ref{fig:demod} shows the demodularization process and how it interacts w
 The library for reading and writing Racket bytecode in Racket was mainly used for debugging purposes and was incomplete, so the first task was to fully implement the Racket bytecode library.
 \begin{figure}
   \input{figures/demod}
-  \label{fig:demod}
   \caption{Demodularization process}
+  \label{fig:demod}
 \end{figure}
 
 The actual algorithm for demodularization is similar to the model in the previous chapter in that it traces requires and includes all phase 0 code in the final module, but it also has to deal with the module prefix and references to the prefix.

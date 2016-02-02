@@ -40,7 +40,7 @@ Both inlining and demodularization result in similar final bytecode, where the o
 The cross-module inlining algorithm is more complicated than the demodularization algorithm, so there are cases where inlining would fail and demodularization would not. 
 The inlining algorithm creates annotations on the bytecode of functions, which it must track and update.
 If a function is too large, the algorithm will not inline it (even if it is only used once). 
-Demodularization does not have these limitations because it every function in the program is available to the optimizer as if it were a local function. 
+Demodularization does not have these limitations because every function in the program is available to the optimizer as if it were a local function. 
 Therefore, it would be possible to create a benchmark that differentiates between cross-module inlining and demodularization by creating functions that are too large to inline, but would still be optimized in the demodularized program.
 
 \section{Macro Benchmarks}
