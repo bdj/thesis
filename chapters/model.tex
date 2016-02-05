@@ -195,6 +195,45 @@ The final four rules in Figure~\ref{fig:demod-redex3} rearrange the program's mo
 
 \section{Equivalence}
 We claim that the programs will evaluate to the same answers before and after demodularization. 
+We first show what code in a program's modules will run, then that a \texttt{require} can be turned into a \texttt{begin}, and finally that demodularization maintains program meaning.
+
+\newtheorem{lemma}{Lemma}
+
+\begin{lemma}
+  \label{lem:phase0}
+  Only code relative to phase 0 of the main program will be evaluated.
+\end{lemma}
+\begin{proof}
+  Let module $A$ be the main module of a program $P$. 
+  Let module $B$ be a module in $P$. 
+  If $B$ is not reachable in the require graph from $A$, then none of its code will be evaluated.
+  If $B$ is reachable from $A$, it will be pushed on the evaluation stack at some phase $n$. The phase $n$ is calculated by subtracting the phase module $B$ was required at from the current evaluation phase, which started at 0. 
+  Therefore, the code that will be evaluated in $B$ is the code at phase $n$, if it exists.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:reqbegin}
+  A program with a \texttt{require} is bisimilar to a program with a \texttt{begin}.
+\end{lemma}
+\begin{proof}
+  Let program $P$ be
+  \begin{equation*}
+  \begin{split}
+    ((module_0) ... (\texttt{module}\ A\ ((\texttt{require}\ B\ \texttt{@}\ phase_n))\ ((m\ expr_A))) \\
+  (\texttt{module}\ B\ ()\ ((-phase_n\ expr_B)))\ (module_1)\ ...)
+\end{split}
+\end{equation*}
+    for some modules $A$ and $B$ and phases $n, m$. Let program $P'$ be 
+    \[((module_0)\ ... (\texttt{module}\ A\ ()\ ((m\ (\texttt{begin}\ expr_B\ expr_A))))\ (module_1)\ ...)\]. 
+  Programs $P$ and $P'$ are bisimilar.
+  Phase $m$ must be relative to phase 0 for any module requiring $A$ for $expr_A$ and $expr_B$ to be evaluated per Lemma~\ref{lem:phase0}, otherwise the programs are trivially bisimilar. 
+  Evaluating $P$ will put $B$ on the evaluation stack at phase $-n$ per rule~\ref{eq:module-require}. 
+  Then it will evaluate $expr_B$ until it is a value. 
+  Next it will pop $B$ off the stack and evaluate $A$ at phase 0.
+  This will evaluate $expr_A$ until it is a value.
+  Evaluating $P'$ will evaluate $expr_B$ to a value per rule~\ref{eq:expression-done}.
+  Then it will evaluate $expr_A$ to a value, therefore $P$ and $P'$ are bisimilar.
+\end{proof}
 
 \newtheorem*{theorem}{Theorem}
 \begin{theorem}
@@ -210,10 +249,12 @@ Evaluating a program P a number of steps n and the demodularized program $P'$ a 
 
 % Properties: grab all code should grab, never grab extra code, renaming doesn't clash
 
-\begin{proof}[Proof Sketch]
-The proof is by induction on the DAG of required modules in a program.
-For each shape of possible requires in a program, we would show the evaluation before and after demodularization run the same module code in the same order and result in the same stores.
+\begin{proof}
+  The demodularization algorithm tracks the phases in which modules are required relative to phase 0 of the program.
+  Per Lemma~\ref{lem:phase0}, this is the only code that will be evaluated in the program. 
+  The algorithm then removes the \texttt{require} forms and replaces them with \texttt{begin} forms in the main module of the program. 
+  Lemma~\ref{lem:reqbegin} states that turning a \texttt{require} into a \texttt{begin} results in a bisimilar program.
+  Therefore, a program is bisimilar before and after demodularization. 
 \end{proof}
 
-The full proof of the theorem would be irrelevant to the implementation because graph traversal is not the difficult part of the demodularization algorithm, instead it is the complexities of the bytecode representation which are not modeled in the \emph{mod} language.
 
