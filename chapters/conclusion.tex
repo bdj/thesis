@@ -3,6 +3,19 @@
 
 Demodularization is a useful optimization for deploying modular programs. 
 A programmer can write a modular program and get the benefits of separate compilation while developing the program, and then get additional speedups by running the demodularizer on the completed program.
+
+Demodularization does have some limitations, such as the speed of the algorithm and not allowing dynamic importing.
+Currently, demodularization takes too long to include in a rapid feedback loop of coding, compiling, and running a program.
+It is best used as a final step before using a release version of a program.
+This could be improved by better library design (so that less modules are included in each program), or by allowing partial groups of modules to be compiled separately.
+Dynamic importing is important for programs such as IDEs and games that have plugins or scripts that are added at runtime.
+Possible future work could allow for these types of programs to work with support for compiling partial groups and a way of matching identifiers in the program with dynamically imported identifiers.
+
+Although this thesis focuses on Racket, many other languages have advanced metaprogramming features or are beginning to add them. 
+For example, Template Haskell~\cite{template-haskell}, SugarJ for Java~\cite{sugarj}, Clojure macros~\cite{clojure}, and C++ templates.
+As these features in other languages mature, they will deal with the same issues Racket has had to deal with in combining macro and module systems. 
+If they choose to implement a phased module system to solve these issues, demodularization would be a viable approach to optimizing programs in those languages.
+
 Demodularization also enables new optimizations that are not feasible to implement for modular programs.
 Without module boundaries, inter-procedural analysis is much easier and worthwhile.
 Also, dead code elimination works much better because the whole program is visible, while in a modular program, only dead code that is private to the module can be eliminated.

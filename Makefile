@@ -2,7 +2,7 @@ all: thesis.pdf
 
 CHAPTERS=introduction.tex module-system.tex intuition.tex model.tex implementation.tex evaluation.tex related-work.tex conclusion.tex benchmarks.tex
 
-LISTINGS=counter.rkt while-lang.rkt while-test.rkt while-expanded.rkt output.tex while-macro.rkt kernel.rkt kernel-bytecode.rkt comp.rkt xml.rkt test-data.sh a.rkt b.rkt c.rkt
+LISTINGS=counter.rkt while-lang.rkt while-test.rkt while-expanded.rkt output.tex while-macro.rkt kernel.rkt kernel-bytecode.rkt comp.rkt xml.rkt test-data.sh a.rkt b.rkt c.rkt micro.sh
 
 FIGURES=modules.tex demod-redex.pdf source.pdf compiled-lang.pdf compiled-eval-lang.pdf eval-reduction0.pdf eval-reduction1.pdf eval-reduction2.pdf eval-reduction3.pdf eval-reduction4.pdf eval-reduction5.pdf eval-reduction6.pdf bisim.tex compilation.tex demod.tex micro-results.pdf macro-results.pdf gc-results.pdf queue-modules.tex d-modules.tex
 

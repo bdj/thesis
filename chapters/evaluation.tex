@@ -22,7 +22,8 @@ Each test was run 5 times and an average of the results was taken.
 
 \section{Micro benchmarks}
 
-The micro benchmarks for demodularization involve a module that calls a function from another module, which calls a function from another module, and so on for the number of modules in the test. 
+The micro benchmarks for demodularization involve a module that calls a function twice from another module, which calls a function twice from another module, and so on for the number of modules in the test. 
+This results in an exponential algorithm in the number of modules.
 The function call happens in a loop to get times that are significant.
 The full test generation code can be found in Appendix~\ref{chap:benchmarks}.
 Figure~\ref{fig:micro-results} shows the results of running these benchmarks with different numbers of modules.
@@ -33,15 +34,15 @@ The Y-axis represents the time in seconds it takes for the program to run, where
 \caption{Results from micro benchmarks}
 \label{fig:micro-results}
 \end{figure}
-Without inlining, the micro benchmarks increase in a linear fashion with an increase in the number of modules.
-With inlining, the micro benchmarks stay at a constant speed.
-With demodularization, the micro benchmarks also stay at a constant speed, with a slightly better speed than inlining.
-Both inlining and demodularization result in similar final bytecode, where the only difference is how many times the loop is unrolled.
+Without inlining, the micro benchmarks increase in an exponential fashion with an increase in the number of modules.
+With inlining, the micro benchmarks also increase exponentially, but the times line up with having one fewer module because the inliner is able to inline the final module.
+With demodularization, the micro benchmarks increase exponentially, but are flatter and significantly faster compared to the other two tests.
+
 The cross-module inlining algorithm is more complicated than the demodularization algorithm, so there are cases where inlining would fail and demodularization would not. 
 The inlining algorithm creates annotations on the bytecode of functions, which it must track and update.
 If a function is too large, the algorithm will not inline it (even if it is only used once). 
 Demodularization does not have these limitations because every function in the program is available to the optimizer as if it were a local function. 
-Therefore, it would be possible to create a benchmark that differentiates between cross-module inlining and demodularization by creating functions that are too large to inline, but would still be optimized in the demodularized program.
+This benchmark highlights the differences between cross-module inlining and demodularization by creating a function that is too large to inline across module boundaries but will be inlined inside a module.
 
 \section{Macro Benchmarks}
 For macro benchmarks we selected programs that would terminate deterministically and that used multiple modules.
@@ -52,6 +53,9 @@ The second program we tested is a benchmark for the Redex tool.
 Redex is a library that allows users to build and test semantic models.
 We also tested uses of the math and plot libraries, which are written in a modular way. 
 Figure~\ref{fig:macro-results} shows the results of running demodularization on larger programs.
+The Y-axis represents the time taken by the benchmark, with lower results being better.
+The demodularized versions of the programs perform about 10\% better than their modular counterparts.
+This improvement is just using existing optimizations done by the Racket compiler, so there is potential for even more improvement with optimizations that need whole program information.
 \begin{figure}
 \includegraphics[width=.8\textwidth]{figures/macro-results}
 \caption{Results from macro benchmarks}
@@ -67,6 +71,9 @@ In order to make the dead code elimination algorithm sound, we would need to ide
 This would be possible to do with some engineering effort, but it is beyond the scope of this work. 
 The experiment gives a lower-bound on the performance of this optimization, so it is a useful result.
 Figure~\ref{fig:dead-code} shows how much smaller programs become after running the dead code elimination algorithm on them.
+The Y-axis represents the total size of the bytecode of the program, which is approximately the same for a program before and after demodularization (the difference is whether it is in multiple files or just one), and significantly less after dead code elimination.
+This aggressive amount of dead code elimination is only possible on demodularized programs because all of the code the program will need is in a single module. 
+
 \begin{figure}
 \includegraphics[width=.8\textwidth]{figures/gc-results}
 \caption{Dead code elimination results}
@@ -79,7 +86,7 @@ Also, smaller code size can be a benefit by itself in space constrained or netwo
 \section{Further Optimizations}
 
 Having access to the whole-program at once enables optimizations that currently are not implemented by the Racket optimizer.
-For example, any optimizations that rely on Control-Flow Analysis (CFA) \cite{cfa} require access to the whole program.
+For example, any optimizations that rely on Control-Flow Analysis (CFA)~\cite{cfa} require access to the whole program.
 These include type test eliminations and inlining inside function definitions based on arguments.
 Demodularization enables these sorts of optimizations to be performed on modular programs.
 

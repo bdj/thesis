@@ -17,9 +17,14 @@
   (#%require \"m~a.rkt\")
   (#%provide f~a)
   (define-values (f~a) (lambda (x)
-                       (f~a x))))
+                       (if (f~a x)
+                           (f~a x)
+                           (begin
+                             (random) (random) (random) (random) (random)
+                             (random) (random) (random) (random) (random)
+                             )))))
 "
-n (add1 n) n n (add1 n)))))
+n (add1 n) n n (add1 n) (add1 n)))))
 
 (define (write-first-module)
   (with-output-to-file "m0.rkt"
@@ -35,7 +40,7 @@ n (add1 n) n n (add1 n)))))
                                  (begin
                                    (f1 x)
                                    (loop (sub1 x))))))])
-    (loop 1000000000)))
+    (loop 10000000)))
 "))))
 
 (define (write-last-module n)
@@ -46,7 +51,8 @@ n (add1 n) n n (add1 n)))))
 "(module m~a '#%kernel
   (#%provide f~a)
   (define-values (f~a) (lambda (x)
-                         (add1 x))))
+                           (add1 x))))
+                         
 "
 n n n))))
 
