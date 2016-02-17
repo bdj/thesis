@@ -188,7 +188,7 @@
 \@committeemembercfalse
 \@committeememberdfalse
 
-\newcommand{\@@sideval}{twoside}
+\newcommand{\@@sideval}{oneside}
 \newcommand{\@@openval}{openright}
 \newcommand{\@@ptsize}{12pt}
 
